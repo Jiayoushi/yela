@@ -38,7 +38,7 @@ namespace {
 TEST(AnyTest, ATestName) {
   // This test is named "Negative", and belongs to the "FactorialTest"
   // test case.
-  EXPECT_EQ(any(), 0);
+  EXPECT_EQ(yela::any(), 0);
 
   // <TechnicalDetails>
   //

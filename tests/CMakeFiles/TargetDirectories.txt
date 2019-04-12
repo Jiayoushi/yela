@@ -1,0 +1,3 @@
+/home/jyshi/yela/tests/CMakeFiles/rebuild_cache.dir
+/home/jyshi/yela/tests/CMakeFiles/run_tests.dir
+/home/jyshi/yela/tests/CMakeFiles/edit_cache.dir

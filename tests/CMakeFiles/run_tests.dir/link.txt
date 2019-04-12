@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/run_tests.dir/test_main.cc.o CMakeFiles/run_tests.dir/rpc_unittest.cc.o CMakeFiles/run_tests.dir/home/jyshi/yela/src/rpc.cc.o CMakeFiles/run_tests.dir/raft_unittest.cc.o CMakeFiles/run_tests.dir/home/jyshi/yela/src/raft.cc.o  -o run_tests /usr/lib/x86_64-linux-gnu/libgtest.a -lpthread 
