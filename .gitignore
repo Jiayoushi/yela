@@ -1,3 +1,8 @@
 *.o
 tests/CMakeFiles/*
 *.swp
+CMakeCache.txt
+
+cmake_install.cmake
+
+run_tests
