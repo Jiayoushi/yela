@@ -123,6 +123,33 @@ yela/fast:
 	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/build
 .PHONY : yela/fast
 
+src/interface.o: src/interface.cc.o
+
+.PHONY : src/interface.o
+
+# target to build an object file
+src/interface.cc.o:
+	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/src/interface.cc.o
+.PHONY : src/interface.cc.o
+
+src/interface.i: src/interface.cc.i
+
+.PHONY : src/interface.i
+
+# target to preprocess a source file
+src/interface.cc.i:
+	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/src/interface.cc.i
+.PHONY : src/interface.cc.i
+
+src/interface.s: src/interface.cc.s
+
+.PHONY : src/interface.s
+
+# target to generate assembly for a file
+src/interface.cc.s:
+	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/src/interface.cc.s
+.PHONY : src/interface.cc.s
+
 src/main.o: src/main.cc.o
 
 .PHONY : src/main.o
@@ -186,6 +213,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... yela"
 	@echo "... edit_cache"
+	@echo "... src/interface.o"
+	@echo "... src/interface.i"
+	@echo "... src/interface.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

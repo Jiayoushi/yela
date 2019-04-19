@@ -1,25 +1,15 @@
 #include <iostream>
 
+#include "interface.h"
+
 namespace yela {
 
-class Node {
+class Node: public Interface {
  public:
   Node();
   ~Node();
 
-  void Run();
  private:
-
-
-
-
-  // User Interaction
-  const std::string kPrompt = 
-    "\n\n\n\n\n\n\n\n\n\n\nEnter a message:\n";
-  void ClearScreen();
-  void PrintPrompt();
-  bool terminate;
-  std::string ReadInput();
 };
 
 }
