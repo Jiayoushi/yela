@@ -5,7 +5,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(run_tests
-               test_main.cc
+               _main.cc
 
                rpc_unittest.cc
                ../src/rpc.cc

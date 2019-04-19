@@ -1,7 +1,0 @@
-namespace yela {
-
-int okay();
-
-
-
-}
