@@ -11,22 +11,6 @@ Interface::Interface():
 Interface::~Interface() {
 }
 
-void Interface::Run() {
-  ClearScreen();
-  while (true) {
-    PrintPrompt();
-    std::string input = ReadInput();
-    
-    ClearScreen();
-    if (terminate) {
-      break;
-    }
-   
-    Insert(input);
-    PrintHistory();
-  }
-}
-
 std::string Interface::ReadInput() {
   std::string buffer;
   getline(std::cin, buffer);

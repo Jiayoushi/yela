@@ -12,9 +12,7 @@ class Interface {
  public:
   Interface();
   ~Interface();
-
-  void Run();
- private:
+ protected:
   bool terminate;
   // User Interaction
   const std::string kPrompt = 

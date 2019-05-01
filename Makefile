@@ -177,6 +177,33 @@ src/main.cc.s:
 	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/src/main.cc.s
 .PHONY : src/main.cc.s
 
+src/network.o: src/network.cc.o
+
+.PHONY : src/network.o
+
+# target to build an object file
+src/network.cc.o:
+	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/src/network.cc.o
+.PHONY : src/network.cc.o
+
+src/network.i: src/network.cc.i
+
+.PHONY : src/network.i
+
+# target to preprocess a source file
+src/network.cc.i:
+	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/src/network.cc.i
+.PHONY : src/network.cc.i
+
+src/network.s: src/network.cc.s
+
+.PHONY : src/network.s
+
+# target to generate assembly for a file
+src/network.cc.s:
+	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/src/network.cc.s
+.PHONY : src/network.cc.s
+
 src/node.o: src/node.cc.o
 
 .PHONY : src/node.o
@@ -219,6 +246,9 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... src/network.o"
+	@echo "... src/network.i"
+	@echo "... src/network.s"
 	@echo "... src/node.o"
 	@echo "... src/node.i"
 	@echo "... src/node.s"

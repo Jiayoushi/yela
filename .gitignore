@@ -9,4 +9,5 @@ cmake_install.cmake
 
 yela
 
+run
 run_tests
