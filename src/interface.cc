@@ -29,8 +29,8 @@ void Interface::PrintPrompt() {
   std::cout << kPrompt;
 }
 
-void Interface::Insert(const std::string &ip, const std::string &port, const std::string &data) {
-  history_.emplace_back(ip, port, data);
+void Interface::Insert(const Message &msg) {
+  history_.push_back(msg);
 }
 
 void Interface::PrintHistory() {

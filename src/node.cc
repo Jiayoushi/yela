@@ -42,14 +42,11 @@ void Node::PollEvents() {
         perror("recvfrom failed");
         continue;
       }
-      buf[len] = '\0';
-      std::string data(buf);
-      std::cout << peer_addr.sin_port << std::endl;
-      Insert("", "", buf);
+      Insert(ParseMessage(buf, len));
     } else if (events_[i].data.fd == STDIN_FILENO) {
-      std::string input = ReadInput();
-      Insert("", "", "You: " + input);
-      BroadcastMessage(input);
+      Message msg(my_ip_, std::to_string(my_port_), ReadInput());
+      Insert(msg);
+      BroadcastMessage(msg);
     } else {
       std::cerr << "Unmatched file descriptor" << std::endl;
     }

@@ -69,17 +69,13 @@ void Network::EstablishReceiver() {
   }                                                                                   
 }
 
-void Network::BroadcastMessage(const std::string &message) {
+void Network::BroadcastMessage(const Message &msg) {
   for (int peer_port: peers_) {
-    // TODO: this message should be serialized
-    const std::string complete_msg = 
-      std::string() + "<" + my_ip_ + "," + 
-      std::to_string(my_port_) + ">: " + message;
-      SendMessage(peer_port, complete_msg);
+    SendMessage(peer_port, msg);
   }
 }
 
-void Network::SendMessage(int target_port, const std::string &message) {
+void Network::SendMessage(int target_port, const Message &msg) {
   int fd = socket(AF_INET, SOCK_DGRAM, 0);                                            
   if (fd < 0) {                                                                       
     perror("Error: SendMessage failed to create a socket.");
@@ -101,7 +97,17 @@ void Network::SendMessage(int target_port, const std::string &message) {
   std::memcpy(&taget_address.sin_addr, host_info->h_addr_list[0], 
               host_info->h_length);
 
-  if (sendto(fd, message.c_str(), message.size(), 0,
+  std::stringstream ss;
+  cereal::BinaryOutputArchive o_archive(ss);
+  o_archive(msg);
+
+  // Note: Copy byte by byte, do not append null character
+  char buf[kMaxMessageSize];
+  for (int i = 0; i < ss.str().size(); ++i) {
+    buf[i] = ss.str()[i];
+  }
+
+  if (sendto(fd, buf, ss.str().size(), 0,
              (struct sockaddr *)&taget_address, sizeof(taget_address)) < 0) {
     perror("Error: SendMessage sendto failed");
     exit(EXIT_FAILURE);
@@ -110,6 +116,15 @@ void Network::SendMessage(int target_port, const std::string &message) {
   // DEBUG
   //std::cout << "Message " << message << " sent to " << target_port << std::endl;
   close(fd);
+}
+
+Message Network::ParseMessage(const char *data, const int size) {
+  std::string s(data, size);
+  std::stringstream ss(s);
+  cereal::BinaryInputArchive i_archive(ss);
+  Message msg;
+  i_archive(msg);
+  return msg;
 }
 
 std::string Network::GetIp(struct sockaddr_in &addr) {

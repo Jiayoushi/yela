@@ -5,19 +5,9 @@
 #include <vector>
 #include <iostream>
 
+#include "network.h"
 
 namespace yela {
-
-struct Message {
- public:
-  Message(const std::string &ip, const std::string &port, const std::string &d):
-    sender_ip(ip), sender_port(port), data(d) {
-  }
-
-  std::string sender_ip;
-  std::string sender_port;
-  std::string data;
-};
 
 class Interface {
  public:
@@ -34,8 +24,7 @@ class Interface {
   std::string ReadInput();
 
   std::vector<Message> history_;
-  void Insert(const std::string &ip, const std::string &port, 
-              const std::string &data);
+  void Insert(const Message &msg);
   void PrintHistory();
 };
 

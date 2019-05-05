@@ -8,7 +8,32 @@
 #include <string>
 #include <vector>
 
+
+#include "cereal/types/string.hpp"
+#include "cereal/archives/binary.hpp"
+
 namespace yela {
+
+const size_t kMaxMessageSize = 1024;
+
+struct Message {
+ public:
+  Message() {
+  }
+
+  Message(const std::string &ip, const std::string &port, const std::string &d):
+    sender_ip(ip), sender_port(port), data(d) {
+  }
+
+  std::string sender_ip;
+  std::string sender_port;
+  std::string data;
+
+  template<typename Archive>
+  void serialize(Archive &archive) {
+    archive(sender_ip, sender_port, data);
+  }
+};
 
 class Network {
  public:
@@ -19,10 +44,11 @@ class Network {
   const std::string my_ip_ = "127.0.0.1";
   int my_port_;
   int listen_fd_; 
-  void BroadcastMessage(const std::string &message);
+  void BroadcastMessage(const Message &msg);
 
   void EstablishReceiver();
-  void SendMessage(int target_port, const std::string &message);
+  void SendMessage(int peer_port, const Message &msg);
+  Message ParseMessage(const char *data, const int size);
   
   static const int kMaxEventsNum = 256;
   struct epoll_event events_[kMaxEventsNum];
