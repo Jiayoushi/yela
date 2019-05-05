@@ -3,11 +3,12 @@
 #include <cstring>                                                                    
 #include <unistd.h>
 #include <netdb.h>                                                                    
-#include <sys/types.h>                                                                
-#include <sys/socket.h>                                                               
-#include <netinet/in.h>                                                               
-#include <netinet/ip.h>                                                               
-#include <iostream>              
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <arpa/inet.h>
+#include <iostream>
 
 namespace yela {
 
@@ -18,67 +19,51 @@ Network::Network(int my_port, const std::vector<int> &peers):
 }
 
 Network::~Network() {
-  shutdown(recv_fd_, SHUT_RDWR);
-  close(recv_fd_);
+  shutdown(listen_fd_, SHUT_RDWR);
+  close(listen_fd_);
   close(epoll_fd_);
 }
 
 // TODO: understand this and add comments
 void Network::InitializeEpoll() {
+  // 0 means epoll_create
+  // Or it can set to EPOLL_CLOEXEC
   if ((epoll_fd_ = epoll_create1(0)) < 0) {
     perror("Error: epoll_create1 failed");
     exit(EXIT_FAILURE);
   }
 
-  event_.events = EPOLLIN;
-  event_.data.fd = 0;
-
-  if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, 0, &event_) < 0) {
+  input_event_.events = EPOLLIN;
+  input_event_.data.fd = 0;
+  if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, STDIN_FILENO, &input_event_) < 0) {
     perror("Error: failed to add file descriptor 0 to epoll");
     exit(EXIT_FAILURE);
   }
 
-  if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, recv_fd_, &event_) < 0) {
+  peer_event_.events = EPOLLIN;
+  peer_event_.data.fd = listen_fd_;
+  if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, listen_fd_, &peer_event_) < 0) {
     perror("Error: failed to add file descriptor 0 to epoll");
     exit(EXIT_FAILURE);
-  }
-}
-
-void Network::PollEvents() {
-  int event_count = epoll_wait(epoll_fd, events, kMaxEventsNum, -1);
-  if (event_count < 0) {
-    perror("Error: epoll_wait failed");
-    exit(EXIT_FAILURE);
-  }
-
-  for (int i = 0; i < event_count; ++i) {
-    if (events[i].data.fd == recv_fd_) {
-      
-    } else if (events[i].data.fd == 0) {
-
-    } else {
-
-    }
   }
 }
 
 void Network::EstablishReceiver() {
   // socket(domain, type, protocol)                                                   
-  if ((recv_fd_ = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {                              
+  if ((listen_fd_ = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
     perror("Error: cannot create socket");                                            
     exit(EXIT_FAILURE);                                                               
   }                                                                                   
   struct sockaddr_in my_address;                                                      
   memset(&my_address, 0, sizeof(my_address));                                         
   my_address.sin_family = AF_INET;                                                    
-  //                                                                                  
   my_address.sin_addr.s_addr = htonl(INADDR_ANY);                                     
   // htons: host to network - short: convert a number into a 16-bit network           
   // representation. This is commonly used to store a port number into a              
   // sockaddr structure                                                               
-  my_address.sin_port = htons(my_port_);                                                 
-                                                                                      
-  if (bind(recv_fd_, (struct sockaddr *)&my_address, sizeof(my_address)) < 0) {       
+  my_address.sin_port = htons(my_port_);
+
+  if (bind(listen_fd_, (struct sockaddr *)&my_address, sizeof(my_address)) < 0) {
     perror("Error: cannot bind");                                                     
     exit(EXIT_FAILURE);                                                               
   }                                                                                   
@@ -86,7 +71,11 @@ void Network::EstablishReceiver() {
 
 void Network::BroadcastMessage(const std::string &message) {
   for (int peer_port: peers_) {
-    SendMessage(peer_port, message);
+    // TODO: this message should be serialized
+    const std::string complete_msg = 
+      std::string() + "<" + my_ip_ + "," + 
+      std::to_string(my_port_) + ">: " + message;
+      SendMessage(peer_port, complete_msg);
   }
 }
 
@@ -121,6 +110,14 @@ void Network::SendMessage(int target_port, const std::string &message) {
   // DEBUG
   //std::cout << "Message " << message << " sent to " << target_port << std::endl;
   close(fd);
+}
+
+std::string Network::GetIp(struct sockaddr_in &addr) {
+  return std::string(inet_ntoa(addr.sin_addr));
+}
+
+std::string Network::GetPort(struct sockaddr_in &addr) {
+  return std::to_string(ntohs(addr.sin_port));
 }
 
 }

@@ -29,13 +29,16 @@ void Interface::PrintPrompt() {
   std::cout << kPrompt;
 }
 
-void Interface::Insert(const std::string& msg) {
-  history_.emplace_back(msg);
+void Interface::Insert(const std::string &ip, const std::string &port, const std::string &data) {
+  history_.emplace_back(ip, port, data);
 }
 
 void Interface::PrintHistory() {
-  for (const std::string &msg: history_) {
-    std::cout << msg << std::endl;
+  for (const Message &msg: history_) {
+    std::cout << "<" << msg.sender_ip << ","
+              << msg.sender_port << ">"
+              << ": " << msg.data
+              << std::endl;
   }
 }
 
