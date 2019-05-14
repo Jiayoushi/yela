@@ -4,7 +4,6 @@ tests/CMakeFiles/*
 CMakeFiles
 CMakeFiles/*
 CMakeCache.txt
-*.txt
 cmake_install.cmake
 
 yela

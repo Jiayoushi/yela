@@ -45,7 +45,8 @@ void Node::PollEvents() {
         perror("recvfrom failed");
         continue;
       }
-      Insert(ParseMessage(buf, len));
+      Message msg = ParseMessage(buf, len);
+      Insert(msg);
     // Read message from input
     } else if (events_[i].data.fd == STDIN_FILENO) {
       const std::string input = ReadInput();

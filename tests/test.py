@@ -2,6 +2,7 @@
 
 import subprocess
 import os
+import collections
 
 def read_host_file(filename):
     fp = open(filename, 'r')
@@ -19,25 +20,25 @@ def read_host_file(filename):
 
     return my_port, neighbor_ports, input_str
 
+
 executable = "../yela"
 procedure_directory = "procedures"
+host_files = ["host1.txt", "host2.txt", "host3.txt", "host4.txt"]
 hosts = []
 def run():
-    input_strs = []
-    host_files = os.listdir(procedure_directory)
     for host_file in host_files:
-        my_port, neighbor_ports, input_str = read_host_file(procedure_directory + "/" + host_file)
-        host = subprocess.Popen([executable, my_port, neighbor_ports], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        my_port, neighbor_ports, input_string = read_host_file(procedure_directory + "/" + host_file)
+        host = {'instance': subprocess.Popen([executable, my_port, neighbor_ports], stdout=subprocess.PIPE, stdin=subprocess.PIPE), \
+                'input_string': input_string}
         hosts.append(host)
-        input_strs.append(input_str)
 
-    for host, input_str in zip(hosts, input_strs):
-        host.communicate(input_str.encode())
+    for host in hosts:
+        outs, err = host['instance'].communicate(host['input_string'].encode())
 
 def check():
     for host in hosts:
-        host.wait()
-        assert(host.poll() == 0)
+        host['instance'].wait()
+        assert(host['instance'].poll() == 0)
 
 run()
 check()
