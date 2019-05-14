@@ -30,16 +30,31 @@ void Interface::PrintPrompt() {
 }
 
 void Interface::Insert(const Message &msg) {
-  history_.push_back(msg);
+  InsertToDialogue(msg);
+  InsertToHistory(msg);
 }
 
-void Interface::PrintHistory() {
-  for (const Message &msg: history_) {
-    std::cout << "<" << msg.sender_ip << ","
-              << msg.sender_port << ">"
-              << ": " << msg.data
-              << std::endl;
-  }
+void Interface::PrintDialogue() {
+  std::cout << dialogue_ << std::endl;
+}
+
+void Interface::InsertToDialogue(const Message &msg) {
+  std::string complete_msg;
+  complete_msg.reserve(64);
+  complete_msg.append("<");
+  complete_msg.append(msg.sender_ip);
+  complete_msg.append(",");
+  complete_msg.append(msg.sender_port);
+  complete_msg.append(">");
+  complete_msg.append(": ");
+  complete_msg.append(msg.data);
+  complete_msg.append("\n");
+
+  dialogue_.append(complete_msg);
+}
+
+void Interface::InsertToHistory(const Message &msg) {
+  history_.push_back(msg);
 }
 
 }

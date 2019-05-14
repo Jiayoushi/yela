@@ -23,9 +23,14 @@ class Interface {
   void PrintPrompt();
   std::string ReadInput();
 
+  std::string dialogue_;
   std::vector<Message> history_;
   void Insert(const Message &msg);
-  void PrintHistory();
+  void PrintDialogue();
+
+ private:
+  void InsertToHistory(const Message &msg);
+  void InsertToDialogue(const Message &msg);
 };
 
 }

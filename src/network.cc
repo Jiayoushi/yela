@@ -97,6 +97,7 @@ void Network::SendMessage(int target_port, const Message &msg) {
   std::memcpy(&taget_address.sin_addr, host_info->h_addr_list[0], 
               host_info->h_length);
 
+  // Serialize the Message struct into bytes
   std::stringstream ss;
   cereal::BinaryOutputArchive o_archive(ss);
   o_archive(msg);
@@ -107,6 +108,7 @@ void Network::SendMessage(int target_port, const Message &msg) {
     buf[i] = ss.str()[i];
   }
 
+  // Send the serialized message
   if (sendto(fd, buf, ss.str().size(), 0,
              (struct sockaddr *)&taget_address, sizeof(taget_address)) < 0) {
     perror("Error: SendMessage sendto failed");

@@ -10,10 +10,10 @@ class Node: public Interface, public Network {
   Node(int my_port, const std::vector<int> &peers);
   ~Node();
 
-
   void PollEvents();
   void Run();
  private:
+  void WriteHistoryToFile();
 };
 
 }

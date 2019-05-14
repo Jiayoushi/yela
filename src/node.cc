@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
+#include <fstream>
 #include <iostream>
 
 namespace yela {
@@ -20,6 +21,7 @@ Node::Node(int my_port, const std::vector<int> &peers):
 }
 
 Node::~Node() {
+  WriteHistoryToFile();
   std::cout << "Node has exited" << std::endl;
 }
 
@@ -31,7 +33,8 @@ void Node::PollEvents() {
     exit(EXIT_FAILURE);                                                               
   }
   
-  for (int i = 0; i < event_count; ++i) {                                             
+  for (int i = 0; i < event_count; ++i) {
+    // Read message from peers
     if (events_[i].data.fd == listen_fd_) {
       struct sockaddr_in peer_addr;
       socklen_t addrlen = sizeof(peer_addr);
@@ -43,10 +46,14 @@ void Node::PollEvents() {
         continue;
       }
       Insert(ParseMessage(buf, len));
+    // Read message from input
     } else if (events_[i].data.fd == STDIN_FILENO) {
-      Message msg(my_ip_, std::to_string(my_port_), ReadInput());
-      Insert(msg);
-      BroadcastMessage(msg);
+      const std::string input = ReadInput();
+      if (!terminate) {
+        Message msg(my_ip_, std::to_string(my_port_), input);
+        Insert(msg);
+        BroadcastMessage(msg);
+      }
     } else {
       std::cerr << "Unmatched file descriptor" << std::endl;
     }
@@ -60,12 +67,20 @@ void Node::Run() {
     PollEvents();
 
     ClearScreen();                                                                    
-    if (terminate) {                                                                  
-      break;                                                                          
+    if (terminate) {
+      break;
     }
 
-    PrintHistory();                                                                   
+    PrintDialogue();
   }
+}
+
+void Node::WriteHistoryToFile() {
+  const std::string kFileName = std::to_string(my_port_) + ".txt";
+  std::ofstream of;
+  of.open(kFileName);
+  of << dialogue_;
+  of.close();
 }
 
 }
