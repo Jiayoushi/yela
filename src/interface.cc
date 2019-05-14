@@ -15,7 +15,7 @@ std::string Interface::ReadInput() {
   std::string buffer;
   getline(std::cin, buffer);
   // User has entered EOF character, usually ctrl+d in linux
-  if (std::cin.eof()) {
+  if (std::cin.eof() || buffer == "EXIT") {
     terminate = true;
   }
   return buffer;
