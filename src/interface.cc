@@ -42,12 +42,12 @@ void Interface::InsertToDialogue(const Message &msg) {
   std::string complete_msg;
   complete_msg.reserve(64);
   complete_msg.append("<");
-  complete_msg.append(msg.sender_ip);
+  complete_msg.append(msg.origin);
   complete_msg.append(",");
-  complete_msg.append(msg.sender_port);
+  complete_msg.append(std::to_string(msg.sequence_number));
   complete_msg.append(">");
   complete_msg.append(": ");
-  complete_msg.append(msg.data);
+  complete_msg.append(msg.chat_text);
   complete_msg.append("\n");
 
   dialogue_.append(complete_msg);

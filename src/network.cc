@@ -12,9 +12,9 @@
 
 namespace yela {
 
-Network::Network(int my_port, const std::vector<int> &peers):
+Network::Network(const int my_port, const std::vector<int> &peers):
   my_port_(my_port), peers_(peers) {
-  EstablishReceiver();
+  Listen();
   InitializeEpoll();
 }
 
@@ -48,7 +48,7 @@ void Network::InitializeEpoll() {
   }
 }
 
-void Network::EstablishReceiver() {
+void Network::Listen() {
   // socket(domain, type, protocol)                                                   
   if ((listen_fd_ = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
     perror("Error: cannot create socket");                                            
@@ -118,6 +118,11 @@ void Network::SendMessage(int target_port, const Message &msg) {
   // DEBUG
   //std::cout << "Message " << message << " sent to " << target_port << std::endl;
   close(fd);
+}
+
+void Network::SendMessageToRandomPeer(const Message &msg) {
+  int random_target_port = peers_[std::rand() % peers_.size()];
+  SendMessage(random_target_port, msg);
 }
 
 Message Network::ParseMessage(const char *data, const int size) {

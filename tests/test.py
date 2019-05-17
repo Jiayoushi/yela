@@ -2,6 +2,7 @@
 
 import subprocess
 import os
+import sys
 import collections
 
 def read_host_file(filename):
@@ -34,11 +35,17 @@ def run():
 
     for host in hosts:
         outs, err = host['instance'].communicate(host['input_string'].encode())
+        print(outs)
+        if err != None:
+            print(err)
 
 def check():
     for host in hosts:
         host['instance'].wait()
-        assert(host['instance'].poll() == 0)
+        exit_status = host['instance'].poll()
+        if exit_status != 0:
+          print(exit_status)
+          sys.exit(-1)
 
 run()
 check()

@@ -18,35 +18,35 @@ const size_t kMaxMessageSize = 1024;
 
 struct Message {
  public:
-  Message() {
-  }
+  Message() {}
 
-  Message(const std::string &ip, const std::string &port, const std::string &d):
-    sender_ip(ip), sender_port(port), data(d) {
-  }
+  Message(int seqn, const std::string &orig, const std::string &text):
+    sequence_number(seqn), origin(orig), chat_text(text) {}
 
-  std::string sender_ip;
-  std::string sender_port;
-  std::string data;
+  int sequence_number;
+  std::string origin;
+  std::string chat_text;
 
   template<typename Archive>
   void serialize(Archive &archive) {
-    archive(sender_ip, sender_port, data);
+    archive(sequence_number, origin, chat_text);
   }
 };
 
 class Network {
  public:
-  Network(int my_port, const std::vector<int> &peers);
+  Network(const int my_port, const std::vector<int> &peers);
   ~Network();
  protected:
   std::vector<int> peers_;
   const std::string my_ip_ = "127.0.0.1";
   int my_port_;
+
   int listen_fd_; 
+  void SendMessageToRandomPeer(const Message &msg);
   void BroadcastMessage(const Message &msg);
 
-  void EstablishReceiver();
+  void Listen();
   void SendMessage(int peer_port, const Message &msg);
   Message ParseMessage(const char *data, const int size);
   
