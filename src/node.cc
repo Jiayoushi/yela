@@ -59,31 +59,60 @@ void Node::HandleMessageFromPeer() {
   }
 
   Message msg = ParseMessage(buf, len);
-  int &last_msg_sequence_number = sequence_number_tables_[origin_][msg.origin];
-  if (last_msg_sequence_number == 0) {
-    last_msg_sequence_number = 1;
-    SendMessageToRandomPeer(msg);
-    // needs to wait for status message
+  if (msg.message_type == kRumorMessage) {
+    HandleRumorMessage(msg, peer_addr);
   } else {
-    if (last_msg_sequence_number >= msg.sequence_number) {
-      // Discard
-    } else if (last_msg_sequence_number + 1 < msg.sequence_number) {
-      buffer_table_[msg.origin].push(msg);
-    } else { // last_msg_sequence_number + 1 == msg.sequence_number
-      Buffer buffer = buffer_table_[msg.origin];
-      if (buffer.size() != 0) {
-        buffer.push(msg);
-        const Message &out_msg = buffer.top();
-        SendMessageToRandomPeer(out_msg);
-        buffer.pop();
-      } else {
-        SendMessageToRandomPeer(msg);
-      }
-      ++last_msg_sequence_number;
-    }
+    HandleStatusMessage(msg);
   }
 }
 
+void Node::HandleStatusMessage(const Message &msg) {
+    
+
+
+}
+
+void Node::AcknowledgeMessage(const sockaddr_in &peer_addr, 
+  int expected_sequence_number) {
+
+  in_port_t port = peer_addr.sin_port;
+  uint32_t ip = peer_addr.sin_addr.s_addr;
+}
+
+void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) {
+  int &prev_sequence_number = sequence_number_tables_[origin_][msg.origin];
+
+  // A message already received, discard
+  if (prev_sequence_number >= msg.sequence_number) {
+    return;
+
+  // Message does not have the expected next sequence number. Store it for future
+  } else if (prev_sequence_number + 1 < msg.sequence_number) {
+    buffer_table_[msg.origin].push(msg);
+
+  // The expected message sequence number
+  // prev_sequence_number + 1 == msg.sequence_number
+  } else { 
+    Buffer buffer = buffer_table_[msg.origin];
+    // If buffer is not empty, send the top of the buffer first
+    if (buffer.size() != 0) {
+      buffer.push(msg);
+      const Message &out_msg = buffer.top();
+      SendMessageToRandomPeer(out_msg);
+      buffer.pop();
+    // Nothing in the buffer, send the incoming message directly
+    } else {
+      SendMessageToRandomPeer(msg);
+    }
+    Insert(msg);
+    ++prev_sequence_number;
+  }
+
+  // Acknowledge
+  AcknowledgeMessage(peer_addr, prev_sequence_number + 1);
+}
+
+// Read user input and send to random peer
 void Node::HandleLocalHostInput() {
   const std::string input = ReadInput();
   if (!terminate) {

@@ -11,25 +11,52 @@
 
 #include "cereal/types/string.hpp"
 #include "cereal/archives/binary.hpp"
+#include "cereal/types/concepts/pair_associative_container.hpp"
 
 namespace yela {
 
 const size_t kMaxMessageSize = 1024;
 
+enum MessageType {
+  kRumorMessage = 0,
+  kStatusMessage = 1,
+};
+
+typedef std::string Origin;
+typedef int SequenceNumber;
+typedef std::unordered_map<Origin, SequenceNumber> SequenceNumberTable;
+
 struct Message {
  public:
   Message() {}
 
+  // Constructor for rumor message
   Message(int seqn, const std::string &orig, const std::string &text):
-    sequence_number(seqn), origin(orig), chat_text(text) {}
+    message_type(kRumorMessage), sequence_number(seqn), origin(orig), chat_text(text) {
 
+  }
+
+  // Constructor for Status message
+  Message(const SequenceNumberTable &t):
+    message_type(kStatusMessage), table(t) {
+
+  }
+
+  MessageType message_type;
+
+  // Rumor message
   int sequence_number;
   std::string origin;
   std::string chat_text;
 
+  // Status message
+  SequenceNumberTable table;
+
   template<typename Archive>
   void serialize(Archive &archive) {
-    archive(sequence_number, origin, chat_text);
+    archive(message_type,
+            sequence_number, origin, chat_text,
+            table);
   }
 };
 

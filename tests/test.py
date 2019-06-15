@@ -35,7 +35,7 @@ def run():
 
     for host in hosts:
         outs, err = host['instance'].communicate(host['input_string'].encode())
-        print(outs)
+        #print(outs)
         if err != None:
             print(err)
 
