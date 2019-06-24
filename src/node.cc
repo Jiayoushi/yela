@@ -66,17 +66,22 @@ void Node::HandleMessageFromPeer() {
   }
 }
 
+// If the sending peer receives a status message acknowledging the transmission, it compares the vector in the status message with its own status to see if it has any other new messages the remote peer has not yet seen and if so repeats the rumormongering process by sending one of those messages
 void Node::HandleStatusMessage(const Message &msg) {
-    
-
-
+  std::cout << "Status Message Received!" << std::endl;
 }
 
-void Node::AcknowledgeMessage(const sockaddr_in &peer_addr, 
-  int expected_sequence_number) {
+
+// Since it's UDP, we need to resend messages if datagrams are dropped
+// The ack message is a status message 
+void Node::AcknowledgeMessage(const sockaddr_in &peer_addr, const Origin &origin) {
+  Message status_message(sequence_number_tables_[origin]);
 
   in_port_t port = peer_addr.sin_port;
   uint32_t ip = peer_addr.sin_addr.s_addr;
+
+  // TODO: ip is omitted here, need to be part of the target address
+  SendMessage(port, status_message);
 }
 
 void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) {
@@ -105,11 +110,13 @@ void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) 
       SendMessageToRandomPeer(msg);
     }
     Insert(msg);
+
+    // Update 
     ++prev_sequence_number;
   }
 
   // Acknowledge
-  AcknowledgeMessage(peer_addr, prev_sequence_number + 1);
+  AcknowledgeMessage(peer_addr, msg.origin);
 }
 
 // Read user input and send to random peer

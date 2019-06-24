@@ -25,6 +25,7 @@ enum MessageType {
 typedef std::string Origin;
 typedef int SequenceNumber;
 typedef std::unordered_map<Origin, SequenceNumber> SequenceNumberTable;
+typedef std::unordered_map<Origin, SequenceNumberTable> SequenceNumberTables;
 
 struct Message {
  public:
@@ -32,7 +33,8 @@ struct Message {
 
   // Constructor for rumor message
   Message(int seqn, const std::string &orig, const std::string &text):
-    message_type(kRumorMessage), sequence_number(seqn), origin(orig), chat_text(text) {
+    message_type(kRumorMessage), sequence_number(seqn), 
+    origin(orig), chat_text(text) {
 
   }
 

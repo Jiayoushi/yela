@@ -29,15 +29,26 @@ hosts = []
 def run():
     for host_file in host_files:
         my_port, neighbor_ports, input_string = read_host_file(procedure_directory + "/" + host_file)
+        # input_string: a list of string to simulate a local user typing
         host = {'instance': subprocess.Popen([executable, my_port, neighbor_ports], stdout=subprocess.PIPE, stdin=subprocess.PIPE), \
-                'input_string': input_string}
+                'input_string': input_string.split('\n')}
         hosts.append(host)
 
+    # Send input_string concurrently
     for host in hosts:
-        outs, err = host['instance'].communicate(host['input_string'].encode())
-        #print(outs)
-        if err != None:
-            print(err)
+        if len(host['input_string']) != 0:
+          # Send the top input string
+          outs, err = host['instance'].communicate(host['input_string'][0].encode())
+          # Remove the top input string
+          host['input_string'].pop(0)
+          if err != None:
+              print(err)
+
+    # Exit all host by send EXIT to them
+    for host in hosts:
+      outs, err = host['instance'].communicate('EXIT\n'.encode())
+      if err != None:
+          print(err)
 
 def check():
     for host in hosts:
