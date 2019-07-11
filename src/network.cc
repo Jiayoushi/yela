@@ -64,7 +64,8 @@ void Network::Listen() {
   my_address.sin_port = htons(my_port_);
 
   if (bind(listen_fd_, (struct sockaddr *)&my_address, sizeof(my_address)) < 0) {
-    perror("Error: cannot bind");                                                     
+    std::cerr << "Attempt to bind to port " << my_port_ << std::endl;
+    perror("Error: cannot bind");
     exit(EXIT_FAILURE);                                                               
   }                                                                                   
 }

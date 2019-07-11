@@ -25,7 +25,6 @@ enum MessageType {
 typedef std::string Origin;
 typedef int SequenceNumber;
 typedef std::unordered_map<Origin, SequenceNumber> SequenceNumberTable;
-typedef std::unordered_map<Origin, SequenceNumberTable> SequenceNumberTables;
 
 struct Message {
  public:

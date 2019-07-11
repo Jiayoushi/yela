@@ -71,7 +71,6 @@ void Node::HandleStatusMessage(const Message &msg) {
   std::cout << "Status Message Received!" << std::endl;
 }
 
-
 // Since it's UDP, we need to resend messages if datagrams are dropped
 // The ack message is a status message 
 void Node::AcknowledgeMessage(const sockaddr_in &peer_addr, const Origin &origin) {
