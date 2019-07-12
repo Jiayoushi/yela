@@ -1,3 +1,11 @@
 1. Test: send message concurrently one by one, probably need to change communicate to some other methods
 2. HandleStatusMessage
 3. Timeout
+4. Is epoll currently busying waiting?
+5. How to know if a pipe is empty so to send the next message?
+
+
+
+Checked:
+
+

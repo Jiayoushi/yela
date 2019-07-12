@@ -1,5 +1,7 @@
 #include "interface.h"
 
+#include <stdio.h>
+#include <unistd.h>
 #include <iostream>
 
 namespace yela {
@@ -11,14 +13,21 @@ Interface::Interface():
 Interface::~Interface() {
 }
 
+// Input typed by user
 std::string Interface::ReadInput() {
-  std::string buffer;
-  getline(std::cin, buffer);
-  // User has entered EOF character, usually ctrl+d in linux
-  if (std::cin.eof() || buffer == "EXIT") {
-    terminate = true;
+  char buffer[256];
+
+  int bytes_read = 0;
+  if ((bytes_read = read(STDIN_FILENO, buffer, sizeof(buffer))) < 0) {
+    perror("NODE: failed to read user input");
   }
-  return buffer;
+  buffer[bytes_read] = '\0';
+
+  std::string s(buffer);
+  //std::cerr << "BYTES_READ: " << bytes_read << " msg:" << s << ";" << std::endl;
+  if (bytes_read == 0 || s == "EXIT") terminate = true;
+
+  return s;
 }
 
 void Interface::ClearScreen() {

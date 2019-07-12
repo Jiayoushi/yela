@@ -121,6 +121,7 @@ void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) 
 // Read user input and send to random peer
 void Node::HandleLocalHostInput() {
   const std::string input = ReadInput();
+  //std::cerr << my_port_ << " terminate: " << terminate << " " << input << std::endl;
   if (!terminate) {
     Message msg(sequence_number_, origin_, input);
     SendMessageToRandomPeer(msg);

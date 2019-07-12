@@ -37,7 +37,18 @@ class Node {
   }
 
   void SendOnePendingMessage() {
+    std::string msg = messages_.front();
     messages_.pop();
+
+    //std::cout << "TEST: send:" << msg << ";" << std::endl;
+
+    int bytes_sent = 0;
+    if ((bytes_sent = write(stdin_fd_, msg.c_str(), msg.size())) < 0) {
+      perror("TEST: send pending message using write failed.");
+    } else {
+      //std::cout << "TEST: bytes_send: " << bytes_sent << std::endl;
+    }
+    sleep(1);
   }
 
   int GetPid() {
@@ -63,12 +74,11 @@ std::pair<int, int> InitiateNode(const char *argv[]) {
     perror("TEST: Fork failed");
     exit(EXIT_FAILURE);
   } else if (pid > 0) {
-    
+    close(stdin_pipe[0]); // 0 read end
   } else {
-    close(stdin_pipe[1]);
+    close(stdin_pipe[1]); // 1 write end
     dup2(stdin_pipe[0], STDIN_FILENO);
     
-    // Note: comment this if you wish to use stdout of child process to debug
     close(STDOUT_FILENO);
 
     if (execl("./yela", "./yela", argv[0], argv[1], (char *)nullptr) < 0) {
@@ -78,7 +88,7 @@ std::pair<int, int> InitiateNode(const char *argv[]) {
     }
   }
 
-  return std::make_pair(pid, stdin_pipe[0]);
+  return std::make_pair(pid, stdin_pipe[1]);
 }
 
 void InitiateNodes(std::vector<Node> &nodes) {
@@ -105,15 +115,19 @@ int main() {
   std::vector<Node> nodes;
   InitiateNodes(nodes);
 
+  // Send message
   for (Node &node: nodes) {
     while (node.GetPendingMessagesCount() != 0) {
       node.SendOnePendingMessage();
     }
   }
 
+  // Reap
   for (Node &node: nodes) {
     if (waitpid(node.GetPid(), nullptr, 1) < 0) {
       perror("TEST: Failed to reap");
+    } else {
+      //std::cout << "TEST: child reaped" << std::endl;
     }
   }
 
