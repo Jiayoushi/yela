@@ -23,11 +23,26 @@ Arguments GetCommandLine(int argc, char *argv[]) {
 
   if (argc != 3) {
     std::cerr << "Usage: ./yela <my_port> <neighbor1_port,neighbor2_port...>" << std::endl;
+    std::cerr << " Expected: 3 arguments. Got: " << argc << std::endl;
     exit(EXIT_FAILURE);
   }
 
+  //std::cout << "argv: " << argc << std::endl;
+  //for (int i = 0; i < argc; ++i) {
+  //  std::cout << argv[i] << " ";
+  //}
+  //std::cout << std::endl;
+
+
   arguments.my_port = std::stoi(argv[1]);
   ReadNeighbors(argv[2], arguments.neighbors);
+
+  //std::cout << "DEBUG: my_port: " << arguments.my_port << " my neighbors: ";
+  //for (int neighbor: arguments.neighbors) {
+  //  std::cout << neighbor << " ";
+  //}
+
+
   return arguments;
 }
 
