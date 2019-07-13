@@ -92,7 +92,7 @@ std::pair<int, int> InitiateNode(const char *argv[]) {
 }
 
 void InitiateNodes(std::vector<Node> &nodes) {
-  std::vector<std::vector<std::string>> ports = {{"5001", "5002"}, {"5002", "5003,5004"}, {"5003", "5002"}, {"5004", "5001"}};
+  std::vector<std::vector<std::string>> ports = {{"5001", "5002,5004"}, {"5002", "5003,5004"}, {"5003", "5002"}, {"5004", "5001,5002"}};
 
   const char *argv_1[] = {ports[0][0].c_str(), ports[0][1].c_str()};
   std::pair<int, int> pid_stdin_pair_1 = InitiateNode(argv_1);

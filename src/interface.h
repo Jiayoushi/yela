@@ -17,8 +17,9 @@ class Interface {
  protected:
   bool terminate;
   // User Interaction
-  const std::string kPrompt = "\n\n\n\n\n\n\n\n\n\n\nEnter a message:\n";
-  
+  //const std::string kPrompt = "\n\n\n\n\n\n\n\n\n\n\nEnter a message:\n";
+  const std::string kPrompt = "Enter a message:\n"; 
+
   void ClearScreen();
   void PrintPrompt();
   std::string ReadInput();

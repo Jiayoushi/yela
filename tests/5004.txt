@@ -1,7 +1,2 @@
-<5001,1>: I am host1.
 <5002,1>: I am host2!
-<5002,2>: I love myself.
 <5004,1>: I am host4!
-<5004,2>: So great to meet you guys!
-<5004,3>: hehe.
-<5004,4>: Bye!

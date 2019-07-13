@@ -22,18 +22,22 @@ enum MessageType {
   kStatusMessage = 1,
 };
 
-typedef std::string Origin;
+typedef std::string Id;
 typedef int SequenceNumber;
-typedef std::unordered_map<Origin, SequenceNumber> SequenceNumberTable;
+
+// table[id] is the expected next sequence number from id.
+typedef std::unordered_map<Id, SequenceNumber> SequenceNumberTable;
+
+typedef std::string ChatText;
 
 struct Message {
  public:
   Message() {}
 
   // Constructor for rumor message
-  Message(int seqn, const std::string &orig, const std::string &text):
-    message_type(kRumorMessage), sequence_number(seqn), 
-    origin(orig), chat_text(text) {
+  Message(const Id &i, const SequenceNumber &seq_num, const ChatText &text):
+    message_type(kRumorMessage), sequence_number(seq_num), 
+    id(i), chat_text(text) {
 
   }
 
@@ -46,9 +50,9 @@ struct Message {
   MessageType message_type;
 
   // Rumor message
-  int sequence_number;
-  std::string origin;
-  std::string chat_text;
+  SequenceNumber sequence_number;
+  Id id;
+  ChatText chat_text;
 
   // Status message
   SequenceNumberTable table;
@@ -56,7 +60,7 @@ struct Message {
   template<typename Archive>
   void serialize(Archive &archive) {
     archive(message_type,
-            sequence_number, origin, chat_text,
+            sequence_number, id, chat_text,
             table);
   }
 };

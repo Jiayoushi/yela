@@ -31,7 +31,7 @@ std::string Interface::ReadInput() {
 }
 
 void Interface::ClearScreen() {
-  std::cout << "\033[2J\033[1;1H";
+  //std::cout << "\033[2J\033[1;1H";
 }
 
 void Interface::PrintPrompt() {
@@ -51,7 +51,7 @@ void Interface::InsertToDialogue(const Message &msg) {
   std::string complete_msg;
   complete_msg.reserve(64);
   complete_msg.append("<");
-  complete_msg.append(msg.origin);
+  complete_msg.append(msg.id);
   complete_msg.append(",");
   complete_msg.append(std::to_string(msg.sequence_number));
   complete_msg.append(">");

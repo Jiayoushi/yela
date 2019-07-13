@@ -83,10 +83,10 @@ void Network::SendMessage(int target_port, const Message &msg) {
     return;
   }
 
-  struct sockaddr_in taget_address;
-  memset(&taget_address, 0, sizeof(taget_address));
-  taget_address.sin_family = AF_INET;
-  taget_address.sin_port = htons(target_port);
+  struct sockaddr_in target_address;
+  memset(&target_address, 0, sizeof(target_address));
+  target_address.sin_family = AF_INET;
+  target_address.sin_port = htons(target_port);
 
   struct hostent *host_info = gethostbyname("127.0.0.1");
   if (host_info == nullptr) {
@@ -95,7 +95,7 @@ void Network::SendMessage(int target_port, const Message &msg) {
   }
 
   // h_addr_list contains a list of address matching the host name
-  std::memcpy(&taget_address.sin_addr, host_info->h_addr_list[0], 
+  std::memcpy(&target_address.sin_addr, host_info->h_addr_list[0], 
               host_info->h_length);
 
   // Serialize the Message struct into bytes
@@ -111,10 +111,13 @@ void Network::SendMessage(int target_port, const Message &msg) {
 
   // Send the serialized message
   if (sendto(fd, buf, ss.str().size(), 0,
-             (struct sockaddr *)&taget_address, sizeof(taget_address)) < 0) {
+             (struct sockaddr *)&target_address, sizeof(target_address)) < 0) {
     perror("Error: SendMessage sendto failed");
     exit(EXIT_FAILURE);
   }
+
+  //std::cerr << "DEBUG: " << my_port_ << " sendto " << target_port
+  //<< " is_status_message: " << (msg.message_type == kStatusMessage) << std::endl;
 
   // DEBUG
   //std::cout << "Message " << message << " sent to " << target_port << std::endl;
@@ -123,6 +126,7 @@ void Network::SendMessage(int target_port, const Message &msg) {
 
 void Network::SendMessageToRandomPeer(const Message &msg) {
   int random_target_port = peers_[std::rand() % peers_.size()];
+  //std::cerr << "DEBUG: SendMessageToRandomPeer obtained random port: " << random_target_port << std::endl;
   SendMessage(random_target_port, msg);
 }
 

@@ -18,13 +18,12 @@ namespace yela {
 
 Node::Node(const int my_port, const std::vector<int> &peers):
   Network(my_port, peers),
-  origin_(std::to_string(my_port)),
-  sequence_number_(1) {
+  id_(std::to_string(my_port)),
+  sequence_number_(kInitialSequenceNumber) {
 }
 
 Node::~Node() {
   WriteHistoryToFile();
-  std::cout << "Node has exited" << std::endl;
 }
 
 // TODO: probably bad design
@@ -50,6 +49,7 @@ void Node::PollEvents() {
 void Node::HandleMessageFromPeer() {
   struct sockaddr_in peer_addr;
   socklen_t addrlen = sizeof(peer_addr);
+  
   char buf[kMaxMessageSize + 1];
   int len = recvfrom(listen_fd_, buf, kMaxMessageSize, 0,
               (struct sockaddr *)&peer_addr, &addrlen);
@@ -59,6 +59,7 @@ void Node::HandleMessageFromPeer() {
   }
 
   Message msg = ParseMessage(buf, len);
+  
   if (msg.message_type == kRumorMessage) {
     HandleRumorMessage(msg, peer_addr);
   } else {
@@ -66,56 +67,73 @@ void Node::HandleMessageFromPeer() {
   }
 }
 
-// If the sending peer receives a status message acknowledging the transmission, it compares the vector in the status message with its own status to see if it has any other new messages the remote peer has not yet seen and if so repeats the rumormongering process by sending one of those messages
+// Two tasks:
+//  1. Check if the sender needs anything that can be sent from this node
+//  2. Check if this node needs anything that sender has already seen
 void Node::HandleStatusMessage(const Message &msg) {
-  std::cout << "Status Message Received!" << std::endl;
+  const SequenceNumberTable &msg_sqn_table = msg.table;
+
+  bool send_status_message = false;
+  for (auto p = msg_sqn_table.begin(); p != msg_sqn_table.end(); ++p) {
+    Id id = p->first;
+    int seq_num = p->second;
+
+    if (seq_num_table_[id] > seq_num) {
+      SendMessageToRandomPeer(Message(id, seq_num, 
+                                      text_storage_.Get(id, seq_num)));
+    }
+
+    if (seq_num_table_[id] < seq_num) {
+      send_status_message = true;
+    }
+  }
+
+  if (send_status_message) {
+    SendMessageToRandomPeer(Message(seq_num_table_));
+  }
 }
 
 // Since it's UDP, we need to resend messages if datagrams are dropped
 // The ack message is a status message 
-void Node::AcknowledgeMessage(const sockaddr_in &peer_addr, const Origin &origin) {
-  Message status_message(sequence_number_tables_[origin]);
-
-  in_port_t port = peer_addr.sin_port;
-  uint32_t ip = peer_addr.sin_addr.s_addr;
+void Node::AcknowledgeMessage(const Id &id) {
+  Message status_message(seq_num_table_);
 
   // TODO: ip is omitted here, need to be part of the target address
-  SendMessage(port, status_message);
+  // Note ACK is sent to random neighbor.
+  // There is no way knowing who sends this message since a process may use
+  // one port to send udp datagram and discard it right away.
+  SendMessageToRandomPeer(status_message);
 }
 
 void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) {
-  int &prev_sequence_number = sequence_number_tables_[origin_][msg.origin];
+  // If this message was original from this node, there is no need to do anything
+  if (msg.id == id_) return;
+
+  int &last_sequence_number = seq_num_table_[msg.id];
 
   // A message already received, discard
-  if (prev_sequence_number >= msg.sequence_number) {
+  if (last_sequence_number >= msg.sequence_number) {
     return;
 
-  // Message does not have the expected next sequence number. Store it for future
-  } else if (prev_sequence_number + 1 < msg.sequence_number) {
-    buffer_table_[msg.origin].push(msg);
+  // TODO: Out of order message, way in the future, what to do with this message?
+  } else if (last_sequence_number + 1 < msg.sequence_number) {
 
   // The expected message sequence number
-  // prev_sequence_number + 1 == msg.sequence_number
-  } else { 
-    Buffer buffer = buffer_table_[msg.origin];
-    // If buffer is not empty, send the top of the buffer first
-    if (buffer.size() != 0) {
-      buffer.push(msg);
-      const Message &out_msg = buffer.top();
-      SendMessageToRandomPeer(out_msg);
-      buffer.pop();
-    // Nothing in the buffer, send the incoming message directly
-    } else {
-      SendMessageToRandomPeer(msg);
-    }
+  // last_sequence_number + 1 == msg.sequence_number
+  } else {
+    // Store this message
+    text_storage_.Put(msg.id, msg.sequence_number, msg.chat_text);
+
+    SendMessageToRandomPeer(msg);
+
     Insert(msg);
 
     // Update 
-    ++prev_sequence_number;
+    ++last_sequence_number;
   }
 
   // Acknowledge
-  AcknowledgeMessage(peer_addr, msg.origin);
+  AcknowledgeMessage(msg.id);
 }
 
 // Read user input and send to random peer
@@ -123,7 +141,7 @@ void Node::HandleLocalHostInput() {
   const std::string input = ReadInput();
   //std::cerr << my_port_ << " terminate: " << terminate << " " << input << std::endl;
   if (!terminate) {
-    Message msg(sequence_number_, origin_, input);
+    Message msg(id_, sequence_number_, input);
     SendMessageToRandomPeer(msg);
 
     ++sequence_number_;
