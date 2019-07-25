@@ -37,10 +37,11 @@ class Node {
   }
 
   void SendOnePendingMessage() {
+    // We need to sleep, so that each message is seperated.
+    sleep(1);
+
     std::string msg = messages_.front();
     messages_.pop();
-
-    //std::cout << "TEST: send:" << msg << ";" << std::endl;
 
     int bytes_sent = 0;
     if ((bytes_sent = write(stdin_fd_, msg.c_str(), msg.size())) < 0) {
@@ -48,7 +49,16 @@ class Node {
     } else {
       //std::cout << "TEST: bytes_send: " << bytes_sent << std::endl;
     }
-    //sleep(1);
+  }
+
+  void SendExitMessage() {
+    std::string msg = "EXIT";
+    int bytes_sent = 0;
+    if ((bytes_sent = write(stdin_fd_, msg.c_str(), msg.size())) < 0) {
+      perror("TEST: send pending message using write failed.");
+    } else {
+      //std::cout << "TEST: bytes_send: " << bytes_sent << std::endl;
+    }
   }
 
   int GetPid() {
@@ -115,14 +125,29 @@ int main() {
   std::vector<Node> nodes;
   InitiateNodes(nodes);
 
-  // Send message
+  int total_msg = 0;
   for (Node &node: nodes) {
-    while (node.GetPendingMessagesCount() != 0) {
-      node.SendOnePendingMessage();
+    total_msg += node.GetPendingMessagesCount();
+  }
+
+  // Send message
+  while (total_msg != 0) {
+    for (Node &node: nodes) {
+      if (node.GetPendingMessagesCount() != 0) {
+        node.SendOnePendingMessage();
+        --total_msg;
+      }
     }
   }
 
-  sleep(15);
+  sleep(20);
+  // Send EXIT message
+  for (Node &node: nodes) {
+    while (node.GetPendingMessagesCount() != 0) {
+      node.SendExitMessage();
+    }
+  }
+
   // Reap
   for (Node &node: nodes) {
     if (waitpid(node.GetPid(), nullptr, 1) < 0) {
