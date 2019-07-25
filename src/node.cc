@@ -19,10 +19,12 @@ namespace yela {
 
 Node::Node(const int my_port, const std::vector<int> &peers):
   Network(my_port, peers),
-  id_(std::to_string(my_port)),
-  sequence_number_(kInitialSequenceNumber) {
+  id_(std::to_string(my_port)) {
 
   InitLog(my_port);
+
+  // Every node keeps its own sequence number.
+  seq_num_table_[id_] = kInitialSequenceNumber;
 }
 
 Node::~Node() {
@@ -31,19 +33,23 @@ Node::~Node() {
 }
 
 void Node::PollEvents() {                                                          
-  int event_count = epoll_wait(epoll_fd_, events_, kMaxEventsNum, -1);
+  int event_count = epoll_wait(epoll_fd_, events_, kMaxEventsNum, 1000);
   if (event_count < 0) {
     perror("Error: epoll_wait failed");                                               
     exit(EXIT_FAILURE);                                                               
-  }
-  
-  for (int i = 0; i < event_count; ++i) {
-    if (events_[i].data.fd == listen_fd_) {
-      HandleMessageFromPeer();
-    } else if (events_[i].data.fd == STDIN_FILENO) {
-      HandleLocalHostInput();
-    } else {
-      std::cerr << "Unmatched file descriptor" << std::endl;
+  } else if (event_count == 0) {
+    //Log("Timeout!");
+    Message status_message(seq_num_table_);
+    SendMessageToRandomPeer(status_message);
+  } else {
+    for (int i = 0; i < event_count; ++i) {
+      if (events_[i].data.fd == listen_fd_) {
+        HandleMessageFromPeer();
+      } else if (events_[i].data.fd == STDIN_FILENO) {
+        HandleLocalHostInput();
+      } else {
+        std::cerr << "Unmatched file descriptor" << std::endl;
+      }
     }
   }
 }
@@ -79,23 +85,16 @@ void Node::HandleStatusMessage(const Message &msg) {
     Id id = p->first;
     int seq_num = p->second;
 
-    if (id == id_) {
-      continue;
-    }
-
     // If this node has never seen this id before, it needs to record this
     // new id, and set the default seq number.
     if (seq_num_table_.find(id) == seq_num_table_.end()) {
       seq_num_table_[id] = kInitialSequenceNumber;
     }
 
-    
     if (seq_num_table_[id] > seq_num) {
       SendMessageToRandomPeer(Message(id, seq_num, 
                                       text_storage_.Get(id, seq_num)));
-    }
-
-    if (seq_num_table_[id] < seq_num) {
+    } else if (seq_num_table_[id] < seq_num) {
       Log("wants to have seq_num: " + std::to_string(seq_num_table_[id]) + 
           " from " + id);
       send_status_message = true;
@@ -168,10 +167,11 @@ void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) 
 void Node::HandleLocalHostInput() {
   const std::string input = ReadInput();
   if (!terminate) {
-    Message msg(id_, sequence_number_, input);
+    Message msg(id_, seq_num_table_[id_], input);
     SendMessageToRandomPeer(msg);
+    text_storage_.Put(id_, seq_num_table_[id_], msg.chat_text);
 
-    ++sequence_number_;
+    ++seq_num_table_[id_];
     Insert(msg);
   }
 }

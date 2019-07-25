@@ -122,7 +122,7 @@ int main() {
     }
   }
 
-  sleep(10);
+  sleep(15);
   // Reap
   for (Node &node: nodes) {
     if (waitpid(node.GetPid(), nullptr, 1) < 0) {

@@ -119,9 +119,18 @@ void Network::SendMessage(int target_port, const Message &msg) {
     exit(EXIT_FAILURE);
   }
 
+  // Log
   if (msg.message_type == kRumorMessage) {
     Log("Sendto " + std::to_string(target_port) +  
         " message content: " + msg.chat_text);
+  } else {
+    std::string log_msg = "Sendto " + std::to_string(target_port) + " [";
+    for (auto p = msg.table.cbegin(); p != msg.table.cend(); ++p) {
+      log_msg += p->first + ":" + std::to_string(p->second) + " ";
+    }
+    log_msg.pop_back();
+    log_msg += "]";
+    Log(log_msg);
   }
 
   close(fd);
@@ -134,7 +143,6 @@ void Network::SendMessageToRandomPeer(const Message &msg) {
   int random_index = gen(mt);
 
   int random_target_port = peers_[random_index];
-  //std::cerr << "DEBUG: SendMessageToRandomPeer obtained random port: " << random_target_port << std::endl;
   SendMessage(random_target_port, msg);
 }
 
