@@ -1,8 +1,11 @@
 #include "interface.h"
 
+#include <string>
 #include <stdio.h>
 #include <unistd.h>
 #include <iostream>
+
+#include "log.h"
 
 namespace yela {
 
@@ -25,7 +28,15 @@ std::string Interface::ReadInput() {
 
   std::string s(buffer);
   //std::cerr << "BYTES_READ: " << bytes_read << " msg:" << s << ";" << std::endl;
-  if (bytes_read == 0 || s == "EXIT") terminate = true;
+  if (bytes_read == 0) {
+    std::string msg = "Read 0 bytes, going to exit";
+    terminate = true;
+    Log(msg);
+  } 
+  if (s == "EXIT") {
+    Log("User typed EXIT, going to exit");
+    terminate = true;
+  }
 
   return s;
 }
@@ -40,10 +51,10 @@ void Interface::PrintPrompt() {
 
 void Interface::Insert(const Message &msg) {
   InsertToDialogue(msg);
-  InsertToHistory(msg);
 }
 
 void Interface::PrintDialogue() {
+  ClearScreen();
   std::cout << dialogue_ << std::endl;
 }
 
@@ -60,10 +71,6 @@ void Interface::InsertToDialogue(const Message &msg) {
   complete_msg.append("\n");
 
   dialogue_.append(complete_msg);
-}
-
-void Interface::InsertToHistory(const Message &msg) {
-  history_.push_back(msg);
 }
 
 }

@@ -9,6 +9,9 @@
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <iostream>
+#include <random>
+
+#include "log.h"
 
 namespace yela {
 
@@ -116,16 +119,21 @@ void Network::SendMessage(int target_port, const Message &msg) {
     exit(EXIT_FAILURE);
   }
 
-  //std::cerr << "DEBUG: " << my_port_ << " sendto " << target_port
-  //<< " is_status_message: " << (msg.message_type == kStatusMessage) << std::endl;
+  if (msg.message_type == kRumorMessage) {
+    Log("Sendto " + std::to_string(target_port) +  
+        " message content: " + msg.chat_text);
+  }
 
-  // DEBUG
-  //std::cout << "Message " << message << " sent to " << target_port << std::endl;
   close(fd);
 }
 
 void Network::SendMessageToRandomPeer(const Message &msg) {
-  int random_target_port = peers_[std::rand() % peers_.size()];
+  std::random_device rd;
+  std::mt19937 mt(rd());
+  std::uniform_int_distribution<int> gen(0, peers_.size() - 1);
+  int random_index = gen(mt);
+
+  int random_target_port = peers_[random_index];
   //std::cerr << "DEBUG: SendMessageToRandomPeer obtained random port: " << random_target_port << std::endl;
   SendMessage(random_target_port, msg);
 }

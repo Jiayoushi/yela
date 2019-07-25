@@ -6,7 +6,7 @@
 
 #include "network.h"
 #include "interface.h"
-
+#include "log.h"
 
 namespace yela {
 
@@ -21,14 +21,17 @@ class TextStorage {
   std::string Get(const Id &id, const SequenceNumber &seq_num) {
     auto p = storage_.find(id);
     if (p == storage_.end()) {
-      std::cerr << "ERROR: message storage failed to map id: " << id << std::endl;
+      std::string msg = "ERROR: message storage failed to map id: " + id +
+       " with sequence number " + std::to_string(seq_num);
+      Log(msg);
       return "";
     }
 
     auto x = p->second.find(seq_num);
     if (x == p->second.end()) {
-      std::cerr << "ERROR: message storage failed to map sequence number: "
-      << seq_num << std::endl;
+      std::string msg = "ERROR: message storage failed to map sequence number: "
+        + std::to_string(seq_num) + " from id: " + id;
+      Log(msg);
       return "";
     }
 
@@ -37,7 +40,6 @@ class TextStorage {
 
  private:
   std::unordered_map<Id, std::unordered_map<SequenceNumber, ChatText>> storage_;
-
 };
 
 class Node: public Interface, public Network {
@@ -63,7 +65,7 @@ class Node: public Interface, public Network {
   void HandleMessageFromPeer();
   void HandleLocalHostInput();
 
-  void WriteHistoryToFile();
+  void WriteDialogueToFile();
 };
 
 

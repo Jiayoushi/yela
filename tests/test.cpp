@@ -48,7 +48,7 @@ class Node {
     } else {
       //std::cout << "TEST: bytes_send: " << bytes_sent << std::endl;
     }
-    sleep(1);
+    //sleep(1);
   }
 
   int GetPid() {
@@ -122,6 +122,7 @@ int main() {
     }
   }
 
+  sleep(10);
   // Reap
   for (Node &node: nodes) {
     if (waitpid(node.GetPid(), nullptr, 1) < 0) {

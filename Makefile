@@ -150,6 +150,33 @@ src/interface.cc.s:
 	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/src/interface.cc.s
 .PHONY : src/interface.cc.s
 
+src/log.o: src/log.cc.o
+
+.PHONY : src/log.o
+
+# target to build an object file
+src/log.cc.o:
+	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/src/log.cc.o
+.PHONY : src/log.cc.o
+
+src/log.i: src/log.cc.i
+
+.PHONY : src/log.i
+
+# target to preprocess a source file
+src/log.cc.i:
+	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/src/log.cc.i
+.PHONY : src/log.cc.i
+
+src/log.s: src/log.cc.s
+
+.PHONY : src/log.s
+
+# target to generate assembly for a file
+src/log.cc.s:
+	$(MAKE) -f CMakeFiles/yela.dir/build.make CMakeFiles/yela.dir/src/log.cc.s
+.PHONY : src/log.cc.s
+
 src/main.o: src/main.cc.o
 
 .PHONY : src/main.o
@@ -243,6 +270,9 @@ help:
 	@echo "... src/interface.o"
 	@echo "... src/interface.i"
 	@echo "... src/interface.s"
+	@echo "... src/log.o"
+	@echo "... src/log.i"
+	@echo "... src/log.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

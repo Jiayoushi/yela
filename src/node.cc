@@ -3,6 +3,7 @@
 
 #include "node.h"
 
+#include <cassert>
 #include <cstring>
 #include <unistd.h>
 #include <netdb.h>
@@ -20,14 +21,15 @@ Node::Node(const int my_port, const std::vector<int> &peers):
   Network(my_port, peers),
   id_(std::to_string(my_port)),
   sequence_number_(kInitialSequenceNumber) {
+
+  InitLog(my_port);
 }
 
 Node::~Node() {
-  WriteHistoryToFile();
+  WriteDialogueToFile();
+  CloseLog();
 }
 
-// TODO: probably bad design
-// TODO: needs callback
 void Node::PollEvents() {                                                          
   int event_count = epoll_wait(epoll_fd_, events_, kMaxEventsNum, -1);
   if (event_count < 0) {
@@ -59,7 +61,6 @@ void Node::HandleMessageFromPeer() {
   }
 
   Message msg = ParseMessage(buf, len);
-  
   if (msg.message_type == kRumorMessage) {
     HandleRumorMessage(msg, peer_addr);
   } else {
@@ -78,16 +79,31 @@ void Node::HandleStatusMessage(const Message &msg) {
     Id id = p->first;
     int seq_num = p->second;
 
+    if (id == id_) {
+      continue;
+    }
+
+    // If this node has never seen this id before, it needs to record this
+    // new id, and set the default seq number.
+    if (seq_num_table_.find(id) == seq_num_table_.end()) {
+      seq_num_table_[id] = kInitialSequenceNumber;
+    }
+
+    
     if (seq_num_table_[id] > seq_num) {
       SendMessageToRandomPeer(Message(id, seq_num, 
                                       text_storage_.Get(id, seq_num)));
     }
 
     if (seq_num_table_[id] < seq_num) {
+      Log("wants to have seq_num: " + std::to_string(seq_num_table_[id]) + 
+          " from " + id);
       send_status_message = true;
     }
   }
 
+  // This node has found message it has not received, send status message
+  // letting others know this node want unrecieved messages.
   if (send_status_message) {
     SendMessageToRandomPeer(Message(seq_num_table_));
   }
@@ -109,27 +125,39 @@ void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) 
   // If this message was original from this node, there is no need to do anything
   if (msg.id == id_) return;
 
+  // If a new id comes, the default sequence number for that id should be set
+  // instead of 0.
+  if (seq_num_table_.find(msg.id) == seq_num_table_.end()) {
+    seq_num_table_[msg.id] = kInitialSequenceNumber;
+  }
+
   int &last_sequence_number = seq_num_table_[msg.id];
 
   // A message already received, discard
-  if (last_sequence_number >= msg.sequence_number) {
+  if (msg.sequence_number < last_sequence_number) {
     return;
 
-  // TODO: Out of order message, way in the future, what to do with this message?
-  } else if (last_sequence_number + 1 < msg.sequence_number) {
-
   // The expected message sequence number
-  // last_sequence_number + 1 == msg.sequence_number
-  } else {
+  } else if (msg.sequence_number == last_sequence_number) {
     // Store this message
     text_storage_.Put(msg.id, msg.sequence_number, msg.chat_text);
 
+    // Log for debug
+    Log("Received Rumor message from " + msg.id + " seq_number: " + 
+        std::to_string(msg.sequence_number) + " message_content: " + msg.chat_text);
+
+    // Randomly send
     SendMessageToRandomPeer(msg);
 
+    // Insert into history to be printed
     Insert(msg);
 
     // Update 
     ++last_sequence_number;
+
+  // Waiting for message with seq#1, instead seq#2 is received. Discard it.
+  } else {
+    // Discard
   }
 
   // Acknowledge
@@ -139,7 +167,6 @@ void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) 
 // Read user input and send to random peer
 void Node::HandleLocalHostInput() {
   const std::string input = ReadInput();
-  //std::cerr << my_port_ << " terminate: " << terminate << " " << input << std::endl;
   if (!terminate) {
     Message msg(id_, sequence_number_, input);
     SendMessageToRandomPeer(msg);
@@ -151,20 +178,16 @@ void Node::HandleLocalHostInput() {
 
 void Node::Run() {
   ClearScreen();
-  while (true) { 
+  while (!terminate) { 
     PrintPrompt();
-    PollEvents();
 
-    ClearScreen();                                                                    
-    if (terminate) {
-      break;
-    }
+    PollEvents();
 
     PrintDialogue();
   }
 }
 
-void Node::WriteHistoryToFile() {
+void Node::WriteDialogueToFile() {
   const std::string kFileName = std::to_string(my_port_) + ".txt";
   std::ofstream of;
   of.open(kFileName);

@@ -7,4 +7,5 @@ add_executable(yela
                src/main.cc
                src/node.cc
                src/network.cc
-               src/interface.cc)
+               src/interface.cc
+               src/log.cc)

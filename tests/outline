@@ -1,0 +1,12 @@
+5001|5002,5004
+I am host1.
+EXIT
+5002|5003,5004
+I am host2!
+EXIT
+5003|5002
+I am host3!
+EXIT
+5004|5001,5002
+I am host4!
+EXIT
