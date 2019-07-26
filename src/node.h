@@ -44,7 +44,7 @@ class TextStorage {
 
 class Node: public Interface, public Network {
  public:
-  Node(const int my_port, const std::vector<int> &peers);
+  Node(const int my_port);
   ~Node();
 
   void PollEvents();
@@ -54,7 +54,6 @@ class Node: public Interface, public Network {
   Id id_;
  
   const int kInitialSequenceNumber = 1;
-  int sequence_number_;
   SequenceNumberTable seq_num_table_;
 
   TextStorage text_storage_;

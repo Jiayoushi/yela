@@ -46,8 +46,6 @@ class Node {
     int bytes_sent = 0;
     if ((bytes_sent = write(stdin_fd_, msg.c_str(), msg.size())) < 0) {
       perror("TEST: send pending message using write failed.");
-    } else {
-      //std::cout << "TEST: bytes_send: " << bytes_sent << std::endl;
     }
   }
 
@@ -56,8 +54,6 @@ class Node {
     int bytes_sent = 0;
     if ((bytes_sent = write(stdin_fd_, msg.c_str(), msg.size())) < 0) {
       perror("TEST: send pending message using write failed.");
-    } else {
-      //std::cout << "TEST: bytes_send: " << bytes_sent << std::endl;
     }
   }
 
@@ -91,7 +87,7 @@ std::pair<int, int> InitiateNode(const char *argv[]) {
     
     close(STDOUT_FILENO);
 
-    if (execl("./yela", "./yela", argv[0], argv[1], (char *)nullptr) < 0) {
+    if (execl("./yela", "./yela", argv[0], (char *)nullptr) < 0) {
       perror("TEST: failed to execve");
       std::cerr << errno << std::endl;
       exit(EXIT_FAILURE);
@@ -102,23 +98,14 @@ std::pair<int, int> InitiateNode(const char *argv[]) {
 }
 
 void InitiateNodes(std::vector<Node> &nodes) {
-  std::vector<std::vector<std::string>> ports = {{"5001", "5002,5004"}, {"5002", "5003,5004"}, {"5003", "5002"}, {"5004", "5001,5002"}};
+  std::vector<std::string> ports = {"5001", "5002", "5003", "5004"};
+  std::vector<std::string> files = {"procedures/host1.txt", "procedures/host2.txt", "procedures/host3.txt", "procedures/host4.txt"};
 
-  const char *argv_1[] = {ports[0][0].c_str(), ports[0][1].c_str()};
-  std::pair<int, int> pid_stdin_pair_1 = InitiateNode(argv_1);
-  nodes.push_back(Node(pid_stdin_pair_1.first, pid_stdin_pair_1.second, "procedures/host1.txt"));
-
-  const char *argv_2[] = {ports[1][0].c_str(), ports[1][1].c_str()};
-  std::pair<int, int> pid_stdin_pair_2 = InitiateNode(argv_2);
-  nodes.push_back(Node(pid_stdin_pair_2.first, pid_stdin_pair_2.second, "procedures/host2.txt"));
-
-  const char *argv_3[] = {ports[2][0].c_str(), ports[2][1].c_str()};
-  std::pair<int, int> pid_stdin_pair_3 = InitiateNode(argv_3);
-  nodes.push_back(Node(pid_stdin_pair_3.first, pid_stdin_pair_3.second, "procedures/host3.txt"));
-
-  const char *argv_4[] = {ports[3][0].c_str(), ports[3][1].c_str()};
-  std::pair<int, int> pid_stdin_pair_4 = InitiateNode(argv_4);
-  nodes.push_back(Node(pid_stdin_pair_4.first, pid_stdin_pair_4.second, "procedures/host4.txt"));
+  for (int i = 0; i < ports.size(); ++i) {
+    const char *argv[] = {ports[i].c_str()};
+    std::pair<int, int> pid_stdin = InitiateNode(argv);
+    nodes.push_back(Node(pid_stdin.first, pid_stdin.second, files[i]));
+  }
 }
 
 int main() {

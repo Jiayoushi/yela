@@ -17,8 +17,8 @@
 
 namespace yela {
 
-Node::Node(const int my_port, const std::vector<int> &peers):
-  Network(my_port, peers),
+Node::Node(const int my_port):
+  Network(my_port),
   id_(std::to_string(my_port)) {
 
   InitLog(my_port);
@@ -38,7 +38,6 @@ void Node::PollEvents() {
     perror("Error: epoll_wait failed");                                               
     exit(EXIT_FAILURE);                                                               
   } else if (event_count == 0) {
-    //Log("Timeout!");
     Message status_message(seq_num_table_);
     SendMessageToRandomPeer(status_message);
   } else {

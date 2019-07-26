@@ -11,12 +11,13 @@
 #include <iostream>
 #include <random>
 
+#include "settings.h"
 #include "log.h"
 
 namespace yela {
 
-Network::Network(const int my_port, const std::vector<int> &peers):
-  my_port_(my_port), peers_(peers) {
+Network::Network(const int my_port):
+  my_port_(my_port) {
   Listen();
   InitializeEpoll();
 }
@@ -74,7 +75,7 @@ void Network::Listen() {
 }
 
 void Network::BroadcastMessage(const Message &msg) {
-  for (int peer_port: peers_) {
+  for (int peer_port: peers) {
     SendMessage(peer_port, msg);
   }
 }
@@ -139,11 +140,14 @@ void Network::SendMessage(int target_port, const Message &msg) {
 void Network::SendMessageToRandomPeer(const Message &msg) {
   std::random_device rd;
   std::mt19937 mt(rd());
-  std::uniform_int_distribution<int> gen(0, peers_.size() - 1);
-  int random_index = gen(mt);
+  std::uniform_int_distribution<int> gen(0, peers.size() - 1);
 
-  int random_target_port = peers_[random_index];
-  SendMessage(random_target_port, msg);
+  int random_index = 0;
+  do {
+    random_index = gen(mt);
+  } while (my_port_ == peers[random_index]);
+
+  SendMessage(peers[random_index], msg);
 }
 
 Message Network::ParseMessage(const char *data, const int size) {

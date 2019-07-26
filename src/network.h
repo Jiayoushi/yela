@@ -67,10 +67,9 @@ struct Message {
 
 class Network {
  public:
-  Network(const int my_port, const std::vector<int> &peers);
+  Network(const int my_port);
   ~Network();
  protected:
-  std::vector<int> peers_;
   const std::string my_ip_ = "127.0.0.1";
   int my_port_;
 
