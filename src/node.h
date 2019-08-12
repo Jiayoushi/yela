@@ -44,14 +44,12 @@ class TextStorage {
 
 class Node: public Interface, public Network {
  public:
-  Node(const int my_port);
+  Node(const std::string &settings_file);
   ~Node();
 
   void PollEvents();
   void Run();
  private:
-  // Unique string to identify a node
-  Id id_;
  
   const int kInitialSequenceNumber = 1;
   SequenceNumberTable seq_num_table_;

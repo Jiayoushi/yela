@@ -8,12 +8,29 @@
 #include <string>
 #include <vector>
 
-
 #include "cereal/types/string.hpp"
 #include "cereal/archives/binary.hpp"
 #include "cereal/types/concepts/pair_associative_container.hpp"
 
 namespace yela {
+
+
+
+struct NetworkId {
+  std::string id; 
+  std::string ip;
+  std::string hostname;
+  int port;
+
+  NetworkId() {}
+
+  NetworkId(const std::string &d, const std::string &p,
+            const std::string &h, int pt):
+            id(d), ip(p), hostname(h), port(pt) {
+  }
+};
+
+
 
 const size_t kMaxMessageSize = 1024;
 
@@ -65,17 +82,21 @@ struct Message {
   }
 };
 
+
+
+
 class Network {
  public:
-  Network(const int my_port);
+  Network(const std::string &settings_file);
   ~Network();
- protected:
-  const std::string my_ip_ = "127.0.0.1";
-  int my_port_;
 
+ private:
+  void ReadSettings(const std::string &settings_file);
+  NetworkId ParseSettingLine(const std::string &line);
+
+ protected:
   int listen_fd_; 
   void SendMessageToRandomPeer(const Message &msg);
-  void BroadcastMessage(const Message &msg);
 
   void Listen();
   void SendMessage(int peer_port, const Message &msg);
@@ -93,7 +114,21 @@ class Network {
   // Helper functions
   std::string GetIp(struct sockaddr_in &addr);
   std::string GetPort(struct sockaddr_in &addr);
+
+  // This node's network id
+  NetworkId me_;
+
+  // All pairs' network id
+  std::vector<NetworkId> peers_;
+
+  // Dynamically peers
+  bool IsKnownPeer(const std::string &id);
+  void InsertPeer(const NetworkId &peer);
 };
+
+
+
+
 
 }
 

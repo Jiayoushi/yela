@@ -11,13 +11,12 @@
 #include <iostream>
 #include <random>
 
-#include "settings.h"
 #include "log.h"
 
 namespace yela {
 
-Network::Network(const int my_port):
-  my_port_(my_port) {
+Network::Network(const std::string &settings_file) {
+  ReadSettings(settings_file);
   Listen();
   InitializeEpoll();
 }
@@ -28,7 +27,37 @@ Network::~Network() {
   close(epoll_fd_);
 }
 
-// TODO: understand this and add comments
+NetworkId Network::ParseSettingLine(const std::string &line) {
+  std::stringstream ss(line);
+  std::string item;
+  std::vector<std::string> items;
+  while (std::getline(ss, item, ' ')) {
+    items.push_back(item);
+  }
+
+  return NetworkId(items[0], items[1], items[3], atoi(items[2].c_str()));
+}
+
+void Network::ReadSettings(const std::string &settings_file) {
+  std::ifstream f(settings_file);
+  if (!f.is_open()) {
+    std::cerr << "Error: failed to open settings file." << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  std::string line;
+  // The first line is this node's information
+  getline(f, line);
+  me_ = ParseSettingLine(line);
+
+  // The rest is other nodes' information
+  while (getline(f, line)) {
+    peers_.push_back(ParseSettingLine(line));
+  }
+
+  f.close();
+}
+
 void Network::InitializeEpoll() {
   // 0 means epoll_create
   // Or it can set to EPOLL_CLOEXEC
@@ -65,19 +94,13 @@ void Network::Listen() {
   // htons: host to network - short: convert a number into a 16-bit network           
   // representation. This is commonly used to store a port number into a              
   // sockaddr structure                                                               
-  my_address.sin_port = htons(my_port_);
+  my_address.sin_port = htons(me_.port);
 
   if (bind(listen_fd_, (struct sockaddr *)&my_address, sizeof(my_address)) < 0) {
-    std::cerr << "Attempt to bind to port " << my_port_ << std::endl;
+    std::cerr << "Attempt to bind to port " << me_.port << std::endl;
     perror("Error: cannot bind");
     exit(EXIT_FAILURE);                                                               
   }                                                                                   
-}
-
-void Network::BroadcastMessage(const Message &msg) {
-  for (int peer_port: peers) {
-    SendMessage(peer_port, msg);
-  }
 }
 
 void Network::SendMessage(int target_port, const Message &msg) {
@@ -140,14 +163,14 @@ void Network::SendMessage(int target_port, const Message &msg) {
 void Network::SendMessageToRandomPeer(const Message &msg) {
   std::random_device rd;
   std::mt19937 mt(rd());
-  std::uniform_int_distribution<int> gen(0, peers.size() - 1);
+  std::uniform_int_distribution<int> gen(0, peers_.size() - 1);
 
   int random_index = 0;
   do {
     random_index = gen(mt);
-  } while (my_port_ == peers[random_index]);
+  } while (me_.port == peers_[random_index].port);
 
-  SendMessage(peers[random_index], msg);
+  SendMessage(peers_[random_index].port, msg);
 }
 
 Message Network::ParseMessage(const char *data, const int size) {
@@ -165,6 +188,21 @@ std::string Network::GetIp(struct sockaddr_in &addr) {
 
 std::string Network::GetPort(struct sockaddr_in &addr) {
   return std::to_string(ntohs(addr.sin_port));
+}
+
+
+
+bool Network::IsKnownPeer(const std::string &id) {
+  for (const NetworkId &nid: peers_) {
+    if (nid.id == id) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void Network::InsertPeer(const NetworkId &peer) {
+  peers_.push_back(peer);
 }
 
 }

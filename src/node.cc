@@ -17,22 +17,22 @@
 
 namespace yela {
 
-Node::Node(const int my_port):
-  Network(my_port),
-  id_(std::to_string(my_port)) {
+Node::Node(const std::string &settings_file):
+  Network(settings_file) {
 
-  InitLog(my_port);
+  InitLog(me_.id);
 
   // Every node keeps its own sequence number.
-  seq_num_table_[id_] = kInitialSequenceNumber;
+  seq_num_table_[me_.id] = kInitialSequenceNumber;
 }
 
 Node::~Node() {
   WriteDialogueToFile();
   CloseLog();
+  std::cerr << me_.id << " successfully terminated." << std::endl;
 }
 
-void Node::PollEvents() {                                                          
+void Node::PollEvents() {
   int event_count = epoll_wait(epoll_fd_, events_, kMaxEventsNum, 1000);
   if (event_count < 0) {
     perror("Error: epoll_wait failed");                                               
@@ -66,6 +66,8 @@ void Node::HandleMessageFromPeer() {
   }
 
   Message msg = ParseMessage(buf, len);
+
+  // Handle message 
   if (msg.message_type == kRumorMessage) {
     HandleRumorMessage(msg, peer_addr);
   } else {
@@ -119,9 +121,24 @@ void Node::AcknowledgeMessage(const Id &id) {
   SendMessageToRandomPeer(status_message);
 }
 
+// IP:PORT
+// HOSTNAME:PORT
+NetworkId ParseNewPeerChatText(const std::string &text) {
+  NetworkId peer;
+
+  return peer;
+}
+
 void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) {
+  // Check if it is a new node first
+  // If it is a new peer, parse its chat text in the form of IP:PORT, or HOSTNAME:PORT
+  //if (!IsKnownPeer(msg.id)) {
+  //  NetworkId peer = ParseNewPeerChatText(msg.chat_text);
+  //  InsertPeer(peer);
+  //}
+
   // If this message was original from this node, there is no need to do anything
-  if (msg.id == id_) return;
+  if (msg.id == me_.id) return;
 
   // If a new id comes, the default sequence number for that id should be set
   // instead of 0.
@@ -166,11 +183,11 @@ void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) 
 void Node::HandleLocalHostInput() {
   const std::string input = ReadInput();
   if (!terminate) {
-    Message msg(id_, seq_num_table_[id_], input);
+    Message msg(me_.id, seq_num_table_[me_.id], input);
     SendMessageToRandomPeer(msg);
-    text_storage_.Put(id_, seq_num_table_[id_], msg.chat_text);
+    text_storage_.Put(me_.id, seq_num_table_[me_.id], msg.chat_text);
 
-    ++seq_num_table_[id_];
+    ++seq_num_table_[me_.id];
     Insert(msg);
   }
 }
@@ -187,7 +204,7 @@ void Node::Run() {
 }
 
 void Node::WriteDialogueToFile() {
-  const std::string kFileName = std::to_string(my_port_) + ".txt";
+  const std::string kFileName = std::to_string(me_.port) + ".txt";
   std::ofstream of;
   of.open(kFileName);
   of << dialogue_;

@@ -7,7 +7,7 @@
 
 namespace yela {
 
-void InitLog(int port);
+void InitLog(const std::string &id);
 void Log(const std::string &msg);
 void CloseLog();
 

@@ -21,10 +21,6 @@ class Node {
 
     std::string line;
 
-    // The first line is ignored, it will be handled by the running instance
-    // instead of test code here.
-    std::getline(file, line);
-
     // Read messages
     while (std::getline(file, line)) {
       std::istringstream iss(line);
@@ -98,13 +94,13 @@ std::pair<int, int> InitiateNode(const char *argv[]) {
 }
 
 void InitiateNodes(std::vector<Node> &nodes) {
-  std::vector<std::string> ports = {"5001", "5002", "5003", "5004"};
-  std::vector<std::string> files = {"procedures/host1.txt", "procedures/host2.txt", "procedures/host3.txt", "procedures/host4.txt"};
+  std::vector<std::string> scripts = {"scripts/host1.txt", "scripts/host2.txt", "scripts/host3.txt", "scripts/host4.txt"};
+  std::vector<std::string> settings = {"settings/5001_settings.txt", "settings/5002_settings.txt", "settings/5003_settings.txt", "settings/5004_settings.txt"};
 
-  for (int i = 0; i < ports.size(); ++i) {
-    const char *argv[] = {ports[i].c_str()};
+  for (int i = 0; i < scripts.size(); ++i) {
+    const char *argv[] = {settings[i].c_str()};
     std::pair<int, int> pid_stdin = InitiateNode(argv);
-    nodes.push_back(Node(pid_stdin.first, pid_stdin.second, files[i]));
+    nodes.push_back(Node(pid_stdin.first, pid_stdin.second, scripts[i]));
   }
 }
 
