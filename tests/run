@@ -1,0 +1,59 @@
+#!/bin/bash
+
+set -e
+
+cd ..
+./build
+
+cd tests
+mv ../yela .
+g++ test.cpp -std=c++11 -o test
+./test
+
+# Wait for processes to write to file
+sleep 5
+
+echo 'Dialogue of 5001 below--------------------'
+cat 5001.txt
+echo '-------------------------------------'
+echo
+
+echo 'Dialogue of 5002 below--------------------'
+cat 5002.txt
+echo '-------------------------------------'
+echo
+
+echo 'Dialogue of 5003 below -------------------'
+cat 5003.txt
+echo '-------------------------------------'
+echo 
+
+echo 'Dialogue of 5004 below--------------------'
+echo '-------------------------------------'
+cat 5004.txt
+echo '---------------------------------------'
+echo
+
+echo 'Log of 5001 below--------------------'
+cat 5001_log.txt
+echo '-------------------------------------'
+echo
+
+echo 'Log of 5002 below--------------------'
+cat 5002_log.txt
+echo '-------------------------------------'
+echo
+
+echo 'Log of 5003 below -------------------'
+cat 5003_log.txt
+echo '-------------------------------------'
+echo 
+
+echo 'Log of 5004 below--------------------'
+cat 5004_log.txt
+echo '-------------------------------------'
+echo
+
+#rm 500*.txt
+
+rm test

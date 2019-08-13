@@ -5,10 +5,11 @@ CMakeFiles
 CMakeFiles/*
 CMakeCache.txt
 cmake_install.cmake
+Makefile
+build
 
 tests/*.txt
 
 yela
 
-run
-run_tests
+build
