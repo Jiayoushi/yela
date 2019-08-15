@@ -55,6 +55,18 @@ void Network::ReadSettings(const std::string &settings_file) {
     peers_.push_back(ParseSettingLine(line));
   }
 
+  // DEBUG
+  /*
+  std::cerr << "MY info:" << std::endl;
+  std::cerr << me_.id << " " << me_.ip << " " << me_.hostname << " " << me_.port
+  << std::endl;
+
+  std::cerr << "Peers info: " << std::endl;
+  for (int i = 0; i < peers_.size(); ++i) {
+    std::cerr << peers_[i].id << " " << peers_[i].ip << " " << peers_[i].hostname
+    << " " << peers_[i].port << std::endl;
+  }*/
+
   f.close();
 }
 
@@ -104,12 +116,6 @@ void Network::Listen() {
 }
 
 void Network::SendMessage(int target_port, const Message &msg) {
-  int fd = socket(AF_INET, SOCK_DGRAM, 0);                                            
-  if (fd < 0) {                                                                       
-    perror("Error: SendMessage failed to create a socket.");
-    return;
-  }
-
   struct sockaddr_in target_address;
   memset(&target_address, 0, sizeof(target_address));
   target_address.sin_family = AF_INET;
@@ -137,7 +143,7 @@ void Network::SendMessage(int target_port, const Message &msg) {
   }
 
   // Send the serialized message
-  if (sendto(fd, buf, ss.str().size(), 0,
+  if (sendto(listen_fd_, buf, ss.str().size(), 0,
              (struct sockaddr *)&target_address, sizeof(target_address)) < 0) {
     perror("Error: SendMessage sendto failed");
     exit(EXIT_FAILURE);
@@ -156,8 +162,6 @@ void Network::SendMessage(int target_port, const Message &msg) {
     log_msg += "]";
     Log(log_msg);
   }
-
-  close(fd);
 }
 
 void Network::SendMessageToRandomPeer(const Message &msg) {
@@ -182,15 +186,17 @@ Message Network::ParseMessage(const char *data, const int size) {
   return msg;
 }
 
-std::string Network::GetIp(struct sockaddr_in &addr) {
+std::string Network::GetIp(const struct sockaddr_in &addr) {
   return std::string(inet_ntoa(addr.sin_addr));
 }
 
-std::string Network::GetPort(struct sockaddr_in &addr) {
-  return std::to_string(ntohs(addr.sin_port));
+int Network::GetPort(const struct sockaddr_in &addr) {
+  return ntohs(addr.sin_port);
 }
 
-
+void Network::InsertPeer(const Id &id, const struct sockaddr_in &addr) {
+  peers_.push_back(NetworkId(id, GetIp(addr), "", GetPort(addr)));
+}
 
 bool Network::IsKnownPeer(const std::string &id) {
   for (const NetworkId &nid: peers_) {

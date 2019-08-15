@@ -112,8 +112,10 @@ class Network {
   void InitializeEpoll();
 
   // Helper functions
-  std::string GetIp(struct sockaddr_in &addr);
-  std::string GetPort(struct sockaddr_in &addr);
+  std::string GetIp(const struct sockaddr_in &addr);
+  int GetPort(const struct sockaddr_in &addr);
+
+  void InsertPeer(const Id &id, const struct sockaddr_in &addr);
 
   // This node's network id
   NetworkId me_;

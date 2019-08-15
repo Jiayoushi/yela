@@ -121,21 +121,12 @@ void Node::AcknowledgeMessage(const Id &id) {
   SendMessageToRandomPeer(status_message);
 }
 
-// IP:PORT
-// HOSTNAME:PORT
-NetworkId ParseNewPeerChatText(const std::string &text) {
-  NetworkId peer;
-
-  return peer;
-}
-
 void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) {
   // Check if it is a new node first
   // If it is a new peer, parse its chat text in the form of IP:PORT, or HOSTNAME:PORT
-  //if (!IsKnownPeer(msg.id)) {
-  //  NetworkId peer = ParseNewPeerChatText(msg.chat_text);
-  //  InsertPeer(peer);
-  //}
+  if (!IsKnownPeer(msg.id)) {
+    InsertPeer(msg.id, peer_addr);
+  }
 
   // If this message was original from this node, there is no need to do anything
   if (msg.id == me_.id) return;
