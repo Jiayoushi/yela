@@ -12,13 +12,15 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
+#include <chrono>
 #include <fstream>
 #include <iostream>
 
 namespace yela {
 
 Node::Node(const std::string &settings_file):
-  Network(settings_file) {
+  Network(settings_file),
+  send_table_thread(&Node::SendTableToRandomPeer, this) {
 
   InitLog(me_.id);
 
@@ -29,17 +31,18 @@ Node::Node(const std::string &settings_file):
 Node::~Node() {
   WriteDialogueToFile();
   CloseLog();
+  send_table_thread.join();
   std::cerr << me_.id << " successfully terminated." << std::endl;
 }
 
 void Node::PollEvents() {
-  int event_count = epoll_wait(epoll_fd_, events_, kMaxEventsNum, 1000);
+  int event_count = epoll_wait(epoll_fd_, events_, kMaxEventsNum, -1);
   if (event_count < 0) {
     perror("Error: epoll_wait failed");                                               
     exit(EXIT_FAILURE);                                                               
-  } else if (event_count == 0) {
-    Message status_message(seq_num_table_);
-    SendMessageToRandomPeer(status_message);
+  //} else if (event_count == 0) {
+  //  Message status_message(seq_num_table_);
+  //  SendMessageToRandomPeer(status_message);
   } else {
     for (int i = 0; i < event_count; ++i) {
       if (events_[i].data.fd == listen_fd_) {
@@ -51,6 +54,12 @@ void Node::PollEvents() {
       }
     }
   }
+}
+
+void Node::SendTableToRandomPeer() {
+  Message status_message(seq_num_table_);
+  SendMessageToRandomPeer(status_message);
+  std::this_thread::sleep_for(std::chrono::milliseconds(kPeriodInMs));
 }
 
 void Node::HandleMessageFromPeer() {

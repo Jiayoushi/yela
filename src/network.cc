@@ -59,13 +59,12 @@ void Network::ReadSettings(const std::string &settings_file) {
 }
 
 void Network::InitializeEpoll() {
-  // 0 means epoll_create
-  // Or it can set to EPOLL_CLOEXEC
   if ((epoll_fd_ = epoll_create1(0)) < 0) {
     perror("Error: epoll_create1 failed");
     exit(EXIT_FAILURE);
   }
 
+  // Listen to user input
   input_event_.events = EPOLLIN;
   input_event_.data.fd = 0;
   if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, STDIN_FILENO, &input_event_) < 0) {
@@ -73,6 +72,7 @@ void Network::InitializeEpoll() {
     exit(EXIT_FAILURE);
   }
 
+  // Listen to remote message
   peer_event_.events = EPOLLIN;
   peer_event_.data.fd = listen_fd_;
   if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, listen_fd_, &peer_event_) < 0) {

@@ -2,6 +2,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <queue>
+#include <thread>
 #include <iostream>
 
 #include "network.h"
@@ -47,10 +48,16 @@ class Node: public Interface, public Network {
   Node(const std::string &settings_file);
   ~Node();
 
-  void PollEvents();
   void Run();
  private:
- 
+  void PollEvents();
+
+  // Anti-entropy
+  // Periodic send message
+  const int kPeriodInMs = 1000;
+  std::thread send_table_thread; 
+  void SendTableToRandomPeer();
+
   const int kInitialSequenceNumber = 1;
   SequenceNumberTable seq_num_table_;
 

@@ -42,7 +42,7 @@ std::string Interface::ReadInput() {
 }
 
 void Interface::ClearScreen() {
-  //std::cout << "\033[2J\033[1;1H";
+  std::cout << "\033[2J\033[1;1H";
 }
 
 void Interface::PrintPrompt() {
