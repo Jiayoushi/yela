@@ -54,6 +54,7 @@ class Node: public Interface, public Network {
 
   // Anti-entropy
   // Periodic send message
+  bool stop_sending;
   const int kPeriodInMs = 1000;
   std::thread send_table_thread; 
   void SendTableToRandomPeer();

@@ -20,6 +20,7 @@ namespace yela {
 
 Node::Node(const std::string &settings_file):
   Network(settings_file),
+  stop_sending(false),
   send_table_thread(&Node::SendTableToRandomPeer, this) {
 
   InitLog(me_.id);
@@ -31,6 +32,7 @@ Node::Node(const std::string &settings_file):
 Node::~Node() {
   WriteDialogueToFile();
   CloseLog();
+  stop_sending = true;
   send_table_thread.join();
   std::cerr << me_.id << " successfully terminated." << std::endl;
 }
@@ -40,15 +42,14 @@ void Node::PollEvents() {
   if (event_count < 0) {
     perror("Error: epoll_wait failed");                                               
     exit(EXIT_FAILURE);                                                               
-  //} else if (event_count == 0) {
-  //  Message status_message(seq_num_table_);
-  //  SendMessageToRandomPeer(status_message);
   } else {
     for (int i = 0; i < event_count; ++i) {
       if (events_[i].data.fd == listen_fd_) {
         HandleMessageFromPeer();
       } else if (events_[i].data.fd == STDIN_FILENO) {
         HandleLocalHostInput();
+        PrintDialogue();
+        PrintPrompt();
       } else {
         std::cerr << "Unmatched file descriptor" << std::endl;
       }
@@ -57,9 +58,11 @@ void Node::PollEvents() {
 }
 
 void Node::SendTableToRandomPeer() {
-  Message status_message(seq_num_table_);
-  SendMessageToRandomPeer(status_message);
-  std::this_thread::sleep_for(std::chrono::milliseconds(kPeriodInMs));
+  while (!stop_sending) {
+    Message status_message(seq_num_table_);
+    SendMessageToRandomPeer(status_message);
+    std::this_thread::sleep_for(std::chrono::milliseconds(kPeriodInMs));
+  }
 }
 
 void Node::HandleMessageFromPeer() {
@@ -194,12 +197,9 @@ void Node::HandleLocalHostInput() {
 
 void Node::Run() {
   ClearScreen();
-  while (!terminate) { 
-    PrintPrompt();
-
+  PrintPrompt();
+  while (!terminate) {
     PollEvents();
-
-    PrintDialogue();
   }
 }
 
