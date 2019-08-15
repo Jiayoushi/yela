@@ -204,7 +204,7 @@ void Node::Run() {
 }
 
 void Node::WriteDialogueToFile() {
-  const std::string kFileName = std::to_string(me_.port) + ".txt";
+  const std::string kFileName = me_.id + ".txt";
   std::ofstream of;
   of.open(kFileName);
   of << dialogue_;

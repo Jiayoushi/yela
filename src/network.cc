@@ -1,6 +1,5 @@
 #include "network.h"
 
-#include <cstring>                                                                    
 #include <unistd.h>
 #include <netdb.h>                                                                    
 #include <sys/types.h>
@@ -10,6 +9,8 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <random>
+#include <cassert>
+#include <cstring>
 
 #include "log.h"
 
@@ -139,10 +140,12 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
 
   // Log
   if (msg.message_type == kRumorMessage) {
-    Log("Sendto " + std::to_string(target.port) +  
+    Log("Sendto " + target.id +  
         " message content: " + msg.chat_text);
   } else {
-    std::string log_msg = "Sendto " + std::to_string(target.port) + " [";
+    std::string log_msg = "Sendto " + target.id + 
+      " (" + target.ip + "," + std::to_string(target.port) + ") " + 
+      " [";
     for (auto p = msg.table.cbegin(); p != msg.table.cend(); ++p) {
       log_msg += p->first + ":" + std::to_string(p->second) + " ";
     }
@@ -157,11 +160,7 @@ void Network::SendMessageToRandomPeer(const Message &msg) {
   std::mt19937 mt(rd());
   std::uniform_int_distribution<int> gen(0, peers_.size() - 1);
 
-  int random_index = 0;
-  do {
-    random_index = gen(mt);
-  } while (me_.port == peers_[random_index].port);
-
+  int random_index = gen(mt);
   SendMessage(peers_[random_index], msg);
 }
 
@@ -179,7 +178,10 @@ std::string Network::GetIp(const struct sockaddr_in &addr) {
 }
 
 int Network::GetPort(const struct sockaddr_in &addr) {
-  return ntohs(addr.sin_port);
+  int t = ntohs(addr.sin_port);
+  assert(t >= 5001);
+  assert(t <= 5004);
+  return t;
 }
 
 void Network::InsertPeer(const Id &id, const struct sockaddr_in &addr) {

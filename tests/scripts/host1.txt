@@ -1,2 +1,0 @@
-I am host1!
-host1 is handsome.

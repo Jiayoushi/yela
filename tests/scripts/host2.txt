@@ -1,2 +1,0 @@
-I am host2!
-host2 is great.

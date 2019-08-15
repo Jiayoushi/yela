@@ -1,2 +1,0 @@
-I am host4!
-host4 is dead.
