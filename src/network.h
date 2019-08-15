@@ -99,7 +99,7 @@ class Network {
   void SendMessageToRandomPeer(const Message &msg);
 
   void Listen();
-  void SendMessage(int peer_port, const Message &msg);
+  void SendMessage(const NetworkId &id, const Message &msg);
   Message ParseMessage(const char *data, const int size);
   
   static const int kMaxEventsNum = 256;

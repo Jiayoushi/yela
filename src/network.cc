@@ -55,18 +55,6 @@ void Network::ReadSettings(const std::string &settings_file) {
     peers_.push_back(ParseSettingLine(line));
   }
 
-  // DEBUG
-  /*
-  std::cerr << "MY info:" << std::endl;
-  std::cerr << me_.id << " " << me_.ip << " " << me_.hostname << " " << me_.port
-  << std::endl;
-
-  std::cerr << "Peers info: " << std::endl;
-  for (int i = 0; i < peers_.size(); ++i) {
-    std::cerr << peers_[i].id << " " << peers_[i].ip << " " << peers_[i].hostname
-    << " " << peers_[i].port << std::endl;
-  }*/
-
   f.close();
 }
 
@@ -115,13 +103,13 @@ void Network::Listen() {
   }                                                                                   
 }
 
-void Network::SendMessage(int target_port, const Message &msg) {
+void Network::SendMessage(const NetworkId &target, const Message &msg) {
   struct sockaddr_in target_address;
   memset(&target_address, 0, sizeof(target_address));
   target_address.sin_family = AF_INET;
-  target_address.sin_port = htons(target_port);
+  target_address.sin_port = htons(target.port);
 
-  struct hostent *host_info = gethostbyname("127.0.0.1");
+  struct hostent *host_info = gethostbyname(target.ip.c_str());
   if (host_info == nullptr) {
     perror("Error: gethostbyname failed");
     exit(EXIT_FAILURE);
@@ -151,10 +139,10 @@ void Network::SendMessage(int target_port, const Message &msg) {
 
   // Log
   if (msg.message_type == kRumorMessage) {
-    Log("Sendto " + std::to_string(target_port) +  
+    Log("Sendto " + std::to_string(target.port) +  
         " message content: " + msg.chat_text);
   } else {
-    std::string log_msg = "Sendto " + std::to_string(target_port) + " [";
+    std::string log_msg = "Sendto " + std::to_string(target.port) + " [";
     for (auto p = msg.table.cbegin(); p != msg.table.cend(); ++p) {
       log_msg += p->first + ":" + std::to_string(p->second) + " ";
     }
@@ -174,7 +162,7 @@ void Network::SendMessageToRandomPeer(const Message &msg) {
     random_index = gen(mt);
   } while (me_.port == peers_[random_index].port);
 
-  SendMessage(peers_[random_index].port, msg);
+  SendMessage(peers_[random_index], msg);
 }
 
 Message Network::ParseMessage(const char *data, const int size) {
