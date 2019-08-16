@@ -136,6 +136,10 @@ void Node::AcknowledgeMessage(const Id &id) {
 }
 
 void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) {
+  if (msg.id == me_.id) {
+    return;
+  }
+
   // Check if it is a new node first
   // If it is a new peer, parse its chat text in the form of IP:PORT, or HOSTNAME:PORT
   if (!IsKnownPeer(msg.id)) {
@@ -164,7 +168,7 @@ void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) 
 
     // Log for debug
     Log("Received Rumor message from " + msg.id + " seq_number: " + 
-        std::to_string(msg.sequence_number) + " message_content: " + msg.chat_text);
+        std::to_string(msg.sequence_number) + " \"" + msg.chat_text + "\"");
 
     // Randomly send
     SendMessageToRandomPeer(msg);

@@ -93,13 +93,13 @@ class Network {
  private:
   void ReadSettings(const std::string &settings_file);
   NetworkId ParseSettingLine(const std::string &line);
+  void SendMessage(const NetworkId &id, const Message &msg);
 
  protected:
   int listen_fd_; 
   void SendMessageToRandomPeer(const Message &msg);
 
   void Listen();
-  void SendMessage(const NetworkId &id, const Message &msg);
   Message ParseMessage(const char *data, const int size);
   
   static const int kMaxEventsNum = 256;

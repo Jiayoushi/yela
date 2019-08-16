@@ -95,7 +95,7 @@ std::pair<int, int> InitiateNode(const char *argv[]) {
 
 void InitiateNodes(std::vector<Node> &nodes) {
   std::vector<std::string> scripts = {"scripts/apple.txt", "scripts/banana.txt", "scripts/cherries.txt", "scripts/drupe.txt"};
-  std::vector<std::string> settings = {"settings/apple.txt", "settings/banana.txt", "settings/cherries.txt", "settings/drupe.txt"};
+  std::vector<std::string> settings = {"settings/apple", "settings/banana", "settings/cherries", "settings/drupe"};
 
   for (int i = 0; i < scripts.size(); ++i) {
     const char *argv[] = {settings[i].c_str()};

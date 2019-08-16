@@ -132,10 +132,11 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
 
   // Log
   if (msg.message_type == kRumorMessage) {
-    Log("Sendto " + target.id +  
-        " message content: " + msg.chat_text);
+    Log("Send rumor to " + target.id +  
+        " (" + target.ip + "," + std::to_string(target.port) + ") " +
+        " \"" + msg.chat_text + "\"");
   } else {
-    std::string log_msg = "Sendto " + target.id + 
+    std::string log_msg = "Send table to " + target.id + 
       " (" + target.ip + "," + std::to_string(target.port) + ") " + 
       " [";
     for (auto p = msg.table.cbegin(); p != msg.table.cend(); ++p) {
@@ -151,8 +152,12 @@ void Network::SendMessageToRandomPeer(const Message &msg) {
   std::random_device rd;
   std::mt19937 mt(rd());
   std::uniform_int_distribution<int> gen(0, peers_.size() - 1);
-
+  
   int random_index = gen(mt);
+  if (peers_[random_index].id == msg.id) {
+    return;
+  }
+
   SendMessage(peers_[random_index], msg);
 }
 
@@ -171,8 +176,6 @@ std::string Network::GetIp(const struct sockaddr_in &addr) {
 
 int Network::GetPort(const struct sockaddr_in &addr) {
   int t = ntohs(addr.sin_port);
-  assert(t >= 5001);
-  assert(t <= 5004);
   return t;
 }
 
