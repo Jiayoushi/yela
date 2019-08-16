@@ -20,7 +20,6 @@ namespace yela {
 
 Node::Node(const std::string &settings_file):
   Network(settings_file),
-  stop_sending(false),
   send_table_thread(&Node::SendTableToRandomPeer, this) {
 
   InitLog(me_.id);
@@ -30,11 +29,10 @@ Node::Node(const std::string &settings_file):
 }
 
 Node::~Node() {
-  WriteDialogueToFile(me_.id);
-  CloseLog();
-  stop_sending = true;
   send_table_thread.join();
-  std::cerr << me_.id << " successfully terminated." << std::endl;
+  Log(me_.id + " successfully terminated.");
+  CloseLog();
+  WriteDialogueToFile(me_.id);
 }
 
 void Node::PollEvents() {
@@ -60,7 +58,7 @@ void Node::PollEvents() {
 }
 
 void Node::SendTableToRandomPeer() {
-  while (!stop_sending) {
+  while (run_program_) {
     Message status_message(seq_num_table_);
     SendMessageToRandomPeer(status_message);
     std::this_thread::sleep_for(std::chrono::milliseconds(kPeriodInMs));
@@ -193,6 +191,11 @@ void Node::HandleLocalHostInput() {
   local_msgs_mutex_.lock();
 
   while (local_msgs_.size() != 0) {
+    if (local_msgs_.front() == kExitMsgForTesting) {
+      run_program_ = false;
+      return;
+    }
+
     Message msg(me_.id, seq_num_table_[me_.id], local_msgs_.front());
     local_msgs_.pop();
     SendMessageToRandomPeer(msg);

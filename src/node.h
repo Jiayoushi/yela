@@ -52,11 +52,11 @@ class Node: public Interface, public Network {
 
   void Run();
  private:
+  const std::string kExitMsgForTesting = "nSQ5oCay0gG6qNJURWxZ";
   void PollEvents();
 
   // Anti-entropy
   // Periodic send message
-  bool stop_sending;
   const int kPeriodInMs = 1000;
   std::thread send_table_thread; 
   void SendTableToRandomPeer();

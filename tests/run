@@ -13,45 +13,4 @@ g++ test.cpp -std=c++11 -o test
 # Wait for processes to write to file
 sleep 5
 
-echo 'Dialogue of apple below--------------------'
-cat apple.txt
-echo '-------------------------------------'
-echo
-
-echo 'Dialogue of banana below--------------------'
-cat banana.txt
-echo '-------------------------------------'
-echo
-
-echo 'Dialogue of cherries below -------------------'
-cat cherries.txt
-echo '-------------------------------------'
-echo 
-
-echo 'Dialogue of drupe below--------------------'
-echo '-------------------------------------'
-cat drupe.txt
-echo '---------------------------------------'
-echo
-
-echo 'Log of apple below--------------------'
-cat apple_log.txt
-echo '-------------------------------------'
-echo
-
-echo 'Log of banana below--------------------'
-cat banana_log.txt
-echo '-------------------------------------'
-echo
-
-echo 'Log of cherries below -------------------'
-cat cherries_log.txt
-echo '-------------------------------------'
-echo 
-
-echo 'Log of drupe below--------------------'
-cat drupe_log.txt
-echo '-------------------------------------'
-echo
-
 rm test

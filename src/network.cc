@@ -142,7 +142,9 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
     for (auto p = msg.table.cbegin(); p != msg.table.cend(); ++p) {
       log_msg += p->first + ":" + std::to_string(p->second) + " ";
     }
-    log_msg.pop_back();
+    if (log_msg.back() != '[') {
+      log_msg.pop_back();
+    }
     log_msg += "]";
     Log(log_msg);
   }

@@ -46,7 +46,7 @@ class Node {
   }
 
   void SendExitMessage() {
-    std::string msg = "EXIT";
+    std::string msg = "nSQ5oCay0gG6qNJURWxZ";
     int bytes_sent = 0;
     if ((bytes_sent = write(stdin_fd_, msg.c_str(), msg.size())) < 0) {
       perror("TEST: send pending message using write failed.");
@@ -94,11 +94,11 @@ std::pair<int, int> InitiateNode(const char *argv[]) {
 }
 
 void InitiateNodes(std::vector<Node> &nodes) {
-  std::vector<std::string> scripts = {"scripts/apple.txt", "scripts/banana.txt", "scripts/cherries.txt", "scripts/drupe.txt"};
-  std::vector<std::string> settings = {"settings/apple", "settings/banana", "settings/cherries", "settings/drupe"};
+  std::vector<std::string> scripts = {"scripts/apple", "scripts/banana", "scripts/cherries", "scripts/drupe"};
+  std::vector<std::string> local = {"local/apple", "local/banana", "local/cherries", "local/drupe"};
 
   for (int i = 0; i < scripts.size(); ++i) {
-    const char *argv[] = {settings[i].c_str()};
+    const char *argv[] = {local[i].c_str()};
     std::pair<int, int> pid_stdin = InitiateNode(argv);
     nodes.push_back(Node(pid_stdin.first, pid_stdin.second, scripts[i]));
   }
@@ -124,7 +124,7 @@ int main() {
   }
 
   sleep(20);
-  // Send EXIT message
+  // Send exit message to let nodes exit
   for (Node &node: nodes) {
     while (node.GetPendingMessagesCount() != 0) {
       node.SendExitMessage();
