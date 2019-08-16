@@ -81,6 +81,9 @@ void Interface::ReadInput() {
       box(textbox_window_, 0, 0);
       wrefresh(textbox_window_);
     } else if (c == kBackspace) {
+      if (sentence.size() == 0) {
+        continue;
+      }
       sentence.pop_back();
 
       // Clear and redraw textbox and text
