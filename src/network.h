@@ -105,6 +105,7 @@ class Network {
   static const int kMaxEventsNum = 256;
   struct epoll_event events_[kMaxEventsNum];
 
+  const int kEpollFrequencyInMs = 500;
   int epoll_fd_;
   struct epoll_event input_event_;
   struct epoll_event peer_event_;

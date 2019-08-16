@@ -30,7 +30,7 @@ Node::Node(const std::string &settings_file):
 }
 
 Node::~Node() {
-  WriteDialogueToFile();
+  WriteDialogueToFile(me_.id);
   CloseLog();
   stop_sending = true;
   send_table_thread.join();
@@ -38,18 +38,20 @@ Node::~Node() {
 }
 
 void Node::PollEvents() {
-  int event_count = epoll_wait(epoll_fd_, events_, kMaxEventsNum, -1);
+  int event_count = epoll_wait(epoll_fd_, events_, 
+                               kMaxEventsNum, kEpollFrequencyInMs);
   if (event_count < 0) {
     perror("Error: epoll_wait failed");                                               
-    exit(EXIT_FAILURE);                                                               
+    exit(EXIT_FAILURE);
+  } else if (event_count == 0) {
+    // Check if there is any local user input
+    if (local_msgs_.size() > 0) {
+      HandleLocalHostInput();
+    }
   } else {
     for (int i = 0; i < event_count; ++i) {
       if (events_[i].data.fd == listen_fd_) {
         HandleMessageFromPeer();
-      } else if (events_[i].data.fd == STDIN_FILENO) {
-        HandleLocalHostInput();
-        PrintDialogue();
-        PrintPrompt();
       } else {
         std::cerr << "Unmatched file descriptor" << std::endl;
       }
@@ -167,8 +169,8 @@ void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) 
     // Randomly send
     SendMessageToRandomPeer(msg);
 
-    // Insert into history to be printed
-    Insert(msg);
+    // Insert into dialogue to be printed
+    InsertToDialogue(msg.id, msg.chat_text);
 
     // Update 
     ++last_sequence_number;
@@ -184,31 +186,25 @@ void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) 
 
 // Read user input and send to random peer
 void Node::HandleLocalHostInput() {
-  const std::string input = ReadInput();
-  if (!terminate) {
-    Message msg(me_.id, seq_num_table_[me_.id], input);
-    SendMessageToRandomPeer(msg);
-    text_storage_.Put(me_.id, seq_num_table_[me_.id], msg.chat_text);
+  local_msgs_mutex_.lock();
 
+  while (local_msgs_.size() != 0) {
+    Message msg(me_.id, seq_num_table_[me_.id], local_msgs_.front());
+    local_msgs_.pop();
+    SendMessageToRandomPeer(msg);
+
+    text_storage_.Put(me_.id, seq_num_table_[me_.id], msg.chat_text);
     ++seq_num_table_[me_.id];
-    Insert(msg);
+    InsertToDialogue(me_.id, msg.chat_text);
   }
+
+  local_msgs_mutex_.unlock();
 }
 
 void Node::Run() {
-  ClearScreen();
-  PrintPrompt();
-  while (!terminate) {
+  while (run_program_) {
     PollEvents();
   }
-}
-
-void Node::WriteDialogueToFile() {
-  const std::string kFileName = me_.id + ".txt";
-  std::ofstream of;
-  of.open(kFileName);
-  of << dialogue_;
-  of.close();
 }
 
 }

@@ -65,14 +65,6 @@ void Network::InitializeEpoll() {
     exit(EXIT_FAILURE);
   }
 
-  // Listen to user input
-  input_event_.events = EPOLLIN;
-  input_event_.data.fd = 0;
-  if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, STDIN_FILENO, &input_event_) < 0) {
-    perror("Error: failed to add file descriptor 0 to epoll");
-    exit(EXIT_FAILURE);
-  }
-
   // Listen to remote message
   peer_event_.events = EPOLLIN;
   peer_event_.data.fd = listen_fd_;

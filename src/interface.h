@@ -1,7 +1,11 @@
 #ifndef YELA_INTERFACE_H_
 #define YELA_INTERFACE_H_
 
+#include <curses.h>
+#include <mutex>
+#include <thread>
 #include <string>
+#include <queue>
 #include <vector>
 #include <iostream>
 
@@ -15,23 +19,37 @@ class Interface {
   ~Interface();
 
  protected:
-  bool terminate;
-  // User Interaction
-  //const std::string kPrompt = "\n\n\n\n\n\n\n\n\n\n\nEnter a message:\n";
-  const std::string kPrompt = "Enter a message:\n"; 
+  bool run_program_;
 
-  void ClearScreen();
-  void PrintPrompt();
-  std::string ReadInput();
+  enum KeyTable {
+    kEnter = 10,
+    kControlD = 4,
+    kBackspace = 127
+  };
+  std::vector<std::string> inputs_;
 
-  std::string dialogue_;
-  std::vector<Message> history_;
-  void Insert(const Message &msg);
+  void InsertToDialogue(const Id &id, const ChatText &chat_text);
+  void WriteDialogueToFile(const Id &id);
+
+  const int kPrintFrequencyInMs = 500;
+  int kMaxMsgToPrint;
   void PrintDialogue();
+  void ReadInput();
 
+  std::mutex local_msgs_mutex_;
+  std::queue<std::string> local_msgs_; 
  private:
-  void InsertToHistory(const Message &msg);
-  void InsertToDialogue(const Message &msg);
+  WINDOW *dialogue_window_;
+  WINDOW *textbox_window_;
+
+  // Thread that manages local user input
+  std::thread input_thread_;
+
+  // Thread that manages printing dialogue
+  std::thread print_thread_;
+
+  std::mutex dialogue_mutex_;
+  std::vector<std::string> dialogue_;
 };
 
 }

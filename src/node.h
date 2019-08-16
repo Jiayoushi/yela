@@ -43,6 +43,8 @@ class TextStorage {
   std::unordered_map<Id, std::unordered_map<SequenceNumber, ChatText>> storage_;
 };
 
+
+
 class Node: public Interface, public Network {
  public:
   Node(const std::string &settings_file);
@@ -59,9 +61,11 @@ class Node: public Interface, public Network {
   std::thread send_table_thread; 
   void SendTableToRandomPeer();
 
+  // Sequence table
   const int kInitialSequenceNumber = 1;
   SequenceNumberTable seq_num_table_;
 
+  // Store the messages this node has received
   TextStorage text_storage_;
 
   void AcknowledgeMessage(const Id &origin);
@@ -69,8 +73,6 @@ class Node: public Interface, public Network {
   void HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr);
   void HandleMessageFromPeer();
   void HandleLocalHostInput();
-
-  void WriteDialogueToFile();
 };
 
 
