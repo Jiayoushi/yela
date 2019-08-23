@@ -53,7 +53,7 @@ void Network::ReadSettings(const std::string &settings_file) {
 
   // The rest is other nodes' information
   while (getline(f, line)) {
-    peers_.push_back(ParseSettingLine(line));
+    distance_vector_.push_back(ParseSettingLine(line));
   }
 
   f.close();
@@ -153,14 +153,18 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
 void Network::SendMessageToRandomPeer(const Message &msg) {
   std::random_device rd;
   std::mt19937 mt(rd());
-  std::uniform_int_distribution<int> gen(0, peers_.size() - 1);
+  std::uniform_int_distribution<int> gen(0, distance_vector_.size() - 1);
   
   int random_index = gen(mt);
-  if (peers_[random_index].id == msg.id) {
+  if (distance_vector_[random_index].id == msg.id) {
     return;
   }
 
-  SendMessage(peers_[random_index], msg);
+  if (msg.id.size() == 0) {
+    Log("WARNING: message's id is not set");
+  }
+
+  SendMessage(distance_vector_[random_index], msg);
 }
 
 Message Network::ParseMessage(const char *data, const int size) {
@@ -182,11 +186,11 @@ int Network::GetPort(const struct sockaddr_in &addr) {
 }
 
 void Network::InsertPeer(const Id &id, const struct sockaddr_in &addr) {
-  peers_.push_back(NetworkId(id, GetIp(addr), "", GetPort(addr)));
+  distance_vector_.push_back(NetworkId(id, GetIp(addr), "", GetPort(addr)));
 }
 
 bool Network::IsKnownPeer(const std::string &id) {
-  for (const NetworkId &nid: peers_) {
+  for (const NetworkId &nid: distance_vector_) {
     if (nid.id == id) {
       return true;
     }
@@ -195,7 +199,16 @@ bool Network::IsKnownPeer(const std::string &id) {
 }
 
 void Network::InsertPeer(const NetworkId &peer) {
-  peers_.push_back(peer);
+  distance_vector_.push_back(peer);
+}
+
+void Network::UpdateDistanceVector(const Id &msg_id, const struct sockaddr_in &addr) {
+  for (int i = 0; i < distance_vector_.size(); ++i) {
+    if (msg_id == distance_vector_[i].id) {
+      distance_vector_[i].ip = GetIp(addr);
+      distance_vector_[i].port = GetPort(addr);
+    }   
+  }
 }
 
 }

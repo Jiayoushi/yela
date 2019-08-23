@@ -59,7 +59,7 @@ void Node::PollEvents() {
 
 void Node::SendTableToRandomPeer() {
   while (run_program_) {
-    Message status_message(seq_num_table_);
+    Message status_message(me_.id, seq_num_table_);
     SendMessageToRandomPeer(status_message);
     std::this_thread::sleep_for(std::chrono::milliseconds(kPeriodInMs));
   }
@@ -79,18 +79,28 @@ void Node::HandleMessageFromPeer() {
 
   Message msg = ParseMessage(buf, len);
 
+  // Check if it is a new node first
+  // If it is a new peer, parse its chat text in the form of IP:PORT, or HOSTNAME:PORT
+  if (!IsKnownPeer(msg.id)) {
+    InsertPeer(msg.id, peer_addr);
+  }
+
   // Handle message 
   if (msg.message_type == kRumorMessage) {
-    HandleRumorMessage(msg, peer_addr);
+    HandleRumorMessage(msg);
   } else {
     HandleStatusMessage(msg);
   }
+
+  // Update destination-sequenced distance vector
+  //UpdateDistanceVector(msg.id, peer_addr); 
 }
 
 // Two tasks:
 //  1. Check if the sender needs anything that can be sent from this node
 //  2. Check if this node needs anything that sender has already seen
 void Node::HandleStatusMessage(const Message &msg) {
+  Log("Received status message from " + msg.id);
   const SequenceNumberTable &msg_sqn_table = msg.table;
 
   bool send_status_message = false;
@@ -117,38 +127,25 @@ void Node::HandleStatusMessage(const Message &msg) {
   // This node has found message it has not received, send status message
   // letting others know this node want unrecieved messages.
   if (send_status_message) {
-    SendMessageToRandomPeer(Message(seq_num_table_));
+    SendMessageToRandomPeer(Message(me_.id, seq_num_table_));
   }
 }
 
 // Since it's UDP, we need to resend messages if datagrams are dropped
 // The ack message is a status message 
 void Node::AcknowledgeMessage(const Id &id) {
-  Message status_message(seq_num_table_);
+  Message status_message(me_.id, seq_num_table_);
 
-  // TODO: ip is omitted here, need to be part of the target address
-  // Note ACK is sent to random neighbor.
-  // There is no way knowing who sends this message since a process may use
-  // one port to send udp datagram and discard it right away.
+  // TODO: Need to send to the sender
   SendMessageToRandomPeer(status_message);
 }
 
-void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) {
+void Node::HandleRumorMessage(const Message &msg) {
   if (msg.id == me_.id) {
     return;
   }
 
-  // Check if it is a new node first
-  // If it is a new peer, parse its chat text in the form of IP:PORT, or HOSTNAME:PORT
-  if (!IsKnownPeer(msg.id)) {
-    InsertPeer(msg.id, peer_addr);
-  }
-
-  // If this message was original from this node, there is no need to do anything
-  if (msg.id == me_.id) return;
-
   // If a new id comes, the default sequence number for that id should be set
-  // instead of 0.
   if (seq_num_table_.find(msg.id) == seq_num_table_.end()) {
     seq_num_table_[msg.id] = kInitialSequenceNumber;
   }
@@ -161,22 +158,7 @@ void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) 
 
   // The expected message sequence number
   } else if (msg.sequence_number == last_sequence_number) {
-    // Store this message
-    text_storage_.Put(msg.id, msg.sequence_number, msg.chat_text);
-
-    // Log for debug
-    Log("Received Rumor message from " + msg.id + " seq_number: " + 
-        std::to_string(msg.sequence_number) + " \"" + msg.chat_text + "\"");
-
-    // Randomly send
-    SendMessageToRandomPeer(msg);
-
-    // Insert into dialogue to be printed
-    InsertToDialogue(msg.id, msg.chat_text);
-
-    // Update 
-    ++last_sequence_number;
-
+    ProcessRumorMessage(msg);
   // Waiting for message with seq#1, instead seq#2 is received. Discard it.
   } else {
     // Discard
@@ -184,6 +166,24 @@ void Node::HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr) 
 
   // Acknowledge
   AcknowledgeMessage(msg.id);
+}
+
+void Node::ProcessRumorMessage(const Message &msg) {
+  // Log for debug
+  Log("Received Rumor message from " + msg.id + " seq_number: " + 
+      std::to_string(msg.sequence_number) + " \"" + msg.chat_text + "\"");
+
+  // Store this message
+  text_storage_.Put(msg.id, msg.sequence_number, msg.chat_text);
+
+  // Send to random neighbor
+  SendMessageToRandomPeer(msg);
+
+  // Insert into dialogue to be printed
+  InsertToDialogue(msg.id, msg.chat_text);
+
+  // Update sequence number table
+  ++seq_num_table_[msg.id];
 }
 
 // Read user input and send to random peer
@@ -198,11 +198,8 @@ void Node::HandleLocalHostInput() {
 
     Message msg(me_.id, seq_num_table_[me_.id], local_msgs_.front());
     local_msgs_.pop();
-    SendMessageToRandomPeer(msg);
 
-    text_storage_.Put(me_.id, seq_num_table_[me_.id], msg.chat_text);
-    ++seq_num_table_[me_.id];
-    InsertToDialogue(me_.id, msg.chat_text);
+    ProcessRumorMessage(msg);
   }
 
   local_msgs_mutex_.unlock();

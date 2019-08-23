@@ -1,0 +1,71 @@
+drupe: Send table to cherries (127.0.0.1,5003)  []
+drupe: Send table to cherries (127.0.0.1,5003)  [drupe:1]
+drupe: Send table to cherries (127.0.0.1,5003)  [drupe:1]
+drupe: Send table to cherries (127.0.0.1,5003)  [drupe:1]
+drupe: Send rumor to cherries (127.0.0.1,5003)  "i am drupe
+"
+drupe: wants to have seq_num: 1 from banana
+drupe: wants to have seq_num: 1 from apple
+drupe: wants to have seq_num: 1 from cherries
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:1 apple:1 drupe:2 banana:1]
+drupe: Received Rumor message from banana seq_number: 1 "i am banana
+"
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:1 apple:1 drupe:2 banana:2]
+drupe: Received Rumor message from cherries seq_number: 1 "i am cherries
+"
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:2 apple:1 drupe:2 banana:2]
+drupe: Received Rumor message from apple seq_number: 1 "great
+"
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:2 apple:2 drupe:2 banana:2]
+drupe: Received Rumor message from apple seq_number: 2 "i am apple
+"
+drupe: Send rumor to banana (127.0.0.1,5003)  "i am apple
+"
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:2 apple:3 drupe:2 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:2 apple:3 drupe:2 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:2 apple:3 drupe:2 banana:2]
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:2 apple:3 drupe:2 banana:2]
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:2 apple:3 drupe:2 banana:2]
+drupe: Received Rumor message from cherries seq_number: 2 "i am out
+"
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:2 banana:2]
+drupe: Send rumor to banana (127.0.0.1,5003)  "he is gone
+"
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:3 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:3 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:3 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:3 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:3 banana:2]
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:3 apple:3 drupe:3 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:3 banana:2]
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:3 apple:3 drupe:3 banana:2]
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:3 apple:3 drupe:3 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:3 banana:2]
+drupe: Send rumor to apple (127.0.0.1,5003)  "ops nobody sees me
+"
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to apple (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to cherries (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]
+drupe: Send table to banana (127.0.0.1,5003)  [cherries:3 apple:3 drupe:4 banana:2]

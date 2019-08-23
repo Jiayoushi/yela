@@ -1,0 +1,56 @@
+cherries: Send table to apple (127.0.0.1,5001)  []
+cherries: Received status message from apple
+cherries: wants to have seq_num: 1 from apple
+cherries: Send table to apple (127.0.0.1,5001)  [apple:1 cherries:1]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:1 cherries:1]
+cherries: Received Rumor message from apple seq_number: 1 "i am apple
+"
+cherries: Send table to apple (127.0.0.1,5001)  [apple:2 cherries:1]
+cherries: Received status message from apple
+cherries: Send table to apple (127.0.0.1,5001)  [apple:2 cherries:1]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:2 cherries:1]
+cherries: Received status message from apple
+cherries: Send table to apple (127.0.0.1,5001)  [apple:2 cherries:1]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:2 cherries:1]
+cherries: Received Rumor message from cherries seq_number: 1 "i am cherries
+"
+cherries: Send rumor to apple (127.0.0.1,5001)  "i am cherries
+"
+cherries: Received status message from apple
+cherries: Send table to apple (127.0.0.1,5001)  [apple:2 cherries:2]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:2 cherries:2]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:2 cherries:2]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:2 cherries:2]
+cherries: Received status message from apple
+cherries: wants to have seq_num: 2 from apple
+cherries: Send table to apple (127.0.0.1,5001)  [apple:2 cherries:2]
+cherries: Received Rumor message from apple seq_number: 2 "nice to meet you
+"
+cherries: Send table to apple (127.0.0.1,5001)  [apple:3 cherries:2]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:3 cherries:2]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:3 cherries:2]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:3 cherries:2]
+cherries: Received Rumor message from cherries seq_number: 2 "me too
+"
+cherries: Send rumor to apple (127.0.0.1,5001)  "me too
+"
+cherries: Received status message from apple
+cherries: Send table to apple (127.0.0.1,5001)  [apple:3 cherries:3]
+cherries: Received status message from apple
+cherries: Send table to apple (127.0.0.1,5001)  [apple:3 cherries:3]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:3 cherries:3]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:3 cherries:3]
+cherries: Received Rumor message from apple seq_number: 3 "see ya
+"
+cherries: Send table to apple (127.0.0.1,5001)  [apple:4 cherries:3]
+cherries: Received status message from apple
+cherries: Send table to apple (127.0.0.1,5001)  [apple:4 cherries:3]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:4 cherries:3]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:4 cherries:3]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:4 cherries:3]
+cherries: Send table to apple (127.0.0.1,5001)  [apple:4 cherries:3]
+cherries: Received Rumor message from cherries seq_number: 3 "see ya
+"
+cherries: Send rumor to apple (127.0.0.1,5001)  "see ya
+"
+cherries: cherries successfully terminated.

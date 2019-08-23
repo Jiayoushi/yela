@@ -14,12 +14,10 @@
 
 namespace yela {
 
-
-
 struct NetworkId {
   std::string id; 
   std::string ip;
-  std::string hostname;
+  std::string hostname; // TODO: just delete this later
   int port;
 
   NetworkId() {}
@@ -29,7 +27,6 @@ struct NetworkId {
             id(d), ip(p), hostname(h), port(pt) {
   }
 };
-
 
 
 const size_t kMaxMessageSize = 1024;
@@ -59,8 +56,8 @@ struct Message {
   }
 
   // Constructor for Status message
-  Message(const SequenceNumberTable &t):
-    message_type(kStatusMessage), table(t) {
+  Message(const Id &i, const SequenceNumberTable &t):
+    id(i), message_type(kStatusMessage), table(t) {
 
   }
 
@@ -121,17 +118,14 @@ class Network {
   // This node's network id
   NetworkId me_;
 
-  // All pairs' network id
-  std::vector<NetworkId> peers_;
+  // All nodes' network id
+  std::vector<NetworkId> distance_vector_;
+  void UpdateDistanceVector(const Id &msg_id, const struct sockaddr_in &addr);
 
   // Dynamically peers
   bool IsKnownPeer(const std::string &id);
   void InsertPeer(const NetworkId &peer);
 };
-
-
-
-
 
 }
 

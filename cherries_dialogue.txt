@@ -1,0 +1,6 @@
+<apple>: i am apple
+<cherries>: i am cherries
+<apple>: nice to meet you
+<cherries>: me too
+<apple>: see ya
+<cherries>: see ya

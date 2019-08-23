@@ -69,8 +69,9 @@ class Node: public Interface, public Network {
   TextStorage text_storage_;
 
   void AcknowledgeMessage(const Id &origin);
+  void ProcessRumorMessage(const Message &msg);
   void HandleStatusMessage(const Message &msg);
-  void HandleRumorMessage(const Message &msg, const sockaddr_in &peer_addr);
+  void HandleRumorMessage(const Message &msg);
   void HandleMessageFromPeer();
   void HandleLocalHostInput();
 };
