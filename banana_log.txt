@@ -1,81 +1,154 @@
+banana: Send table to apple (127.0.0.1,5001)  []
+banana: Received status message from apple
 banana: wants to have seq_num: 1 from apple
-banana: Send table to apple (127.0.0.1,5001)  [apple:1 banana:1]
+banana: wants to have seq_num: 1 from cherries
+banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:1 apple:1]
 banana: Received Rumor message from apple seq_number: 1 "i am apple
 "
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:1]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:1]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:1]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:1]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:1]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:1]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:1]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:1]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:1]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:1]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:1 apple:2]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:1 apple:2]
+banana: Received Rumor message from cherries seq_number: 1 "i am cherries
+"
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:1 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:1 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:1 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:1 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:1 apple:2]
 banana: Received Rumor message from banana seq_number: 1 "i am banana
 "
 banana: Send rumor to apple (127.0.0.1,5001)  "i am banana
 "
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [apple:2 banana:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
-banana: Send table to apple (127.0.0.1,5001)  [cherries:1 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 drupe:1 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 drupe:1 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 drupe:1 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 drupe:1 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 drupe:1 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 drupe:1 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 drupe:1 banana:2 apple:2]
+banana: Received status message from apple
+banana: wants to have seq_num: 1 from drupe
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 drupe:1 banana:2 apple:2]
+banana: Received Rumor message from drupe seq_number: 1 "i am drupe
+"
+banana: Send rumor to cherries (127.0.0.1,5001)  "i am drupe
+"
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:2 drupe:2 banana:2 apple:2]
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:2 drupe:2 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 drupe:2 banana:2 apple:2]
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:2 drupe:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 drupe:2 banana:2 apple:2]
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:2 drupe:2 banana:2 apple:2]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 drupe:2 banana:2 apple:2]
+banana: Received status message from apple
+banana: wants to have seq_num: 2 from drupe
+banana: Send table to apple (127.0.0.1,5001)  [cherries:2 drupe:2 banana:2 apple:2]
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:2 drupe:2 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:2 drupe:2 banana:2 apple:2]
+banana: Received Rumor message from cherries seq_number: 2 "b
+"
+banana: Send rumor to drupe (127.0.0.1,5001)  "b
+"
+banana: Send table to apple (127.0.0.1,5001)  [cherries:3 drupe:2 banana:2 apple:2]
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:3 drupe:2 banana:2 apple:2]
+banana: Received Rumor message from drupe seq_number: 2 "a
+"
+banana: Send rumor to apple (127.0.0.1,5001)  "a
+"
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:2]
+banana: Received status message from apple
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:2]
+banana: Received status message from apple
+banana: wants to have seq_num: 2 from apple
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:2]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:2]
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:2]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:2]
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:2]
+banana: Received status message from apple
+banana: wants to have seq_num: 2 from apple
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:2]
+banana: Received Rumor message from apple seq_number: 2 "a
+"
+banana: Send rumor to cherries (127.0.0.1,5001)  "a
+"
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:3]
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:3]
+banana: Received status message from apple
+banana: Send table to apple (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:3]
+banana: Send table to drupe (127.0.0.1,5001)  [cherries:3 drupe:3 banana:2 apple:3]
+banana: Received Rumor message from banana seq_number: 2 "okay
+"
+banana: Send rumor to cherries (127.0.0.1,5001)  "okay
+"
+banana: Send table to cherries (127.0.0.1,5001)  [cherries:3 drupe:3 banana:3 apple:3]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:3 drupe:3 banana:3 apple:3]
+banana: Send table to apple (127.0.0.1,5001)  [cherries:3 drupe:3 banana:3 apple:3]
+banana: Received Rumor message from banana seq_number: 3 "i am out
+"
+banana: Send rumor to drupe (127.0.0.1,5001)  "i am out
+"
+banana: Received status message from apple
 banana: banana successfully terminated.

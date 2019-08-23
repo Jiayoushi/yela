@@ -87,13 +87,15 @@ void Node::HandleMessageFromPeer() {
 
   // Handle message 
   if (msg.message_type == kRumorMessage) {
-    HandleRumorMessage(msg);
+    bool new_seq_num = HandleRumorMessage(msg);
+    
+    // Update destination-sequenced distance vector
+    if (new_seq_num) {
+      UpdateDistanceVector(msg.id, peer_addr);
+    }
   } else {
     HandleStatusMessage(msg);
   }
-
-  // Update destination-sequenced distance vector
-  //UpdateDistanceVector(msg.id, peer_addr); 
 }
 
 // Two tasks:
@@ -140,9 +142,11 @@ void Node::AcknowledgeMessage(const Id &id) {
   SendMessageToRandomPeer(status_message);
 }
 
-void Node::HandleRumorMessage(const Message &msg) {
+bool Node::HandleRumorMessage(const Message &msg) {
+  bool new_seq_num = false;
+
   if (msg.id == me_.id) {
-    return;
+    return new_seq_num;
   }
 
   // If a new id comes, the default sequence number for that id should be set
@@ -154,11 +158,12 @@ void Node::HandleRumorMessage(const Message &msg) {
 
   // A message already received, discard
   if (msg.sequence_number < last_sequence_number) {
-    return;
+    return new_seq_num;
 
   // The expected message sequence number
   } else if (msg.sequence_number == last_sequence_number) {
     ProcessRumorMessage(msg);
+    new_seq_num = true;
   // Waiting for message with seq#1, instead seq#2 is received. Discard it.
   } else {
     // Discard
@@ -166,6 +171,7 @@ void Node::HandleRumorMessage(const Message &msg) {
 
   // Acknowledge
   AcknowledgeMessage(msg.id);
+  return new_seq_num;
 }
 
 void Node::ProcessRumorMessage(const Message &msg) {

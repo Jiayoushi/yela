@@ -1,8 +1,10 @@
-<drupe>: i am drupe
-<banana>: i am banana
-<cherries>: i am cherries
-<apple>: great
 <apple>: i am apple
-<cherries>: i am out
-<drupe>: he is gone
-<drupe>: ops nobody sees me
+<cherries>: i am cherries
+<banana>: i am banana
+<drupe>: i am drupe
+<drupe>: a
+<cherries>: b
+<apple>: a
+<banana>: okay
+<banana>: i am out
+<apple>: see ya
