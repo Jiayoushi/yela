@@ -1,10 +1,2 @@
-<apple>: i am apple
-<cherries>: i am cherries
-<banana>: i am banana
-<drupe>: i am drupe
-<drupe>: a
-<cherries>: b
-<apple>: a
-<banana>: okay
-<banana>: i am out
-<apple>: see ya
+<apple>: okay
+<apple>: nice

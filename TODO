@@ -4,3 +4,6 @@
    A and B knows D only through C's ip address. So when C dies, D is isolated, its message only goes to C(dead), A and B's message only goes to C(dead).
 3. After sent a copy of the rumor message to some other random node, this node should expect a status message to ack it. What if timeout occurs? Do you resend it?
    Outlined in lab1 rumormongering section.
+4. Private message
+5. HopLimit in DSDV
+6. it is better to make some periodic checking to event trigger style.

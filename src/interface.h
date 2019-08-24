@@ -24,7 +24,11 @@ class Interface {
   enum KeyTable {
     kEnter = 10,
     kControlD = 4,
-    kBackspace = 127
+    kBackspace = KEY_BACKSPACE,
+    kUp = KEY_UP,
+    kDown = KEY_DOWN,
+    kLeft = KEY_LEFT,
+    kRight = KEY_RIGHT
   };
   std::vector<std::string> inputs_;
 
@@ -36,11 +40,25 @@ class Interface {
   void PrintDialogue();
   void ReadInput();
 
-  std::mutex local_msgs_mutex_;
-  std::queue<std::string> local_msgs_; 
+  // Menu for options for either chat, upload file, download file or search file
+  enum Mode {
+    kChat = 0, 
+    kUpload = 1, 
+    kDownload = 2, 
+    kSearch = 3
+  };
+  int current_mode_;
+
+  const std::vector<std::string> kModeString = {
+    "Chat", "Upload", "Download", "Search"
+  };
+
+  std::mutex local_inputs_mutex_;
+  std::queue<std::pair<int, std::string>> local_inputs_; 
  private:
   WINDOW *dialogue_window_;
   WINDOW *textbox_window_;
+  WINDOW *mode_window_;
 
   // Thread that manages local user input
   std::thread input_thread_;

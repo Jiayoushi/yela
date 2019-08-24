@@ -43,7 +43,7 @@ void Node::PollEvents() {
     exit(EXIT_FAILURE);
   } else if (event_count == 0) {
     // Check if there is any local user input
-    if (local_msgs_.size() > 0) {
+    if (local_inputs_.size() > 0) {
       HandleLocalHostInput();
     }
   } else {
@@ -194,21 +194,34 @@ void Node::ProcessRumorMessage(const Message &msg) {
 
 // Read user input and send to random peer
 void Node::HandleLocalHostInput() {
-  local_msgs_mutex_.lock();
+  local_inputs_mutex_.lock();
 
-  while (local_msgs_.size() != 0) {
-    if (local_msgs_.front() == kExitMsgForTesting) {
+  while (local_inputs_.size() != 0) {
+    const std::pair<int, std::string> &input = local_inputs_.front();
+
+    if (input.second == kExitMsgForTesting) {
       run_program_ = false;
       return;
     }
 
-    Message msg(me_.id, seq_num_table_[me_.id], local_msgs_.front());
-    local_msgs_.pop();
+    if (input.first == kChat) {
+      Message msg(me_.id, seq_num_table_[me_.id], input.second);
+      ProcessRumorMessage(msg);
+    } else if (input.first == kUpload) {
+  
+    } else if (input.first == kDownload) {
 
-    ProcessRumorMessage(msg);
+    } else if (input.first == kSearch) {
+
+    } else {
+      Log("WARNING: current input mode " + std::to_string(input.first) + 
+      " is not matched to any of the mode");
+    }
+
+    local_inputs_.pop();
   }
 
-  local_msgs_mutex_.unlock();
+  local_inputs_mutex_.unlock();
 }
 
 void Node::Run() {

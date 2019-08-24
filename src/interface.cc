@@ -10,7 +10,7 @@
 namespace yela {
 
 Interface::Interface():
-  run_program_(true) {
+  run_program_(true), current_mode_(kChat) {
 
   // Initialize memory for display
   initscr();
@@ -25,17 +25,23 @@ Interface::Interface():
   getmaxyx(stdscr, kMaxScreenY, kMaxScreenX);
 
   // Allocate dialogue window
-  
   int height = 30, width = kMaxScreenX - 12, start_y = 0, start_x = 0;
   dialogue_window_ = newwin(height, width, start_y, start_x);
 
-  // How many messages can fit in one screen?
+  // How many messages to fit in one screen?
   kMaxMsgToPrint = height - 2;
 
   // Allocate textbox window
   int height2 = 3, width2 = kMaxScreenX - 25, 
-      start_y2 = kMaxScreenY - 10, start_x2 = 5;
+      start_y2 = kMaxScreenY - 13, start_x2 = 5;
   textbox_window_ = newwin(height2, width2, start_y2, start_x2);
+  
+  keypad(textbox_window_, true);
+
+  // Allocate mode window
+  int height3 = 6, width3 = 10,
+      start_y3 = kMaxScreenY - 10, start_x3 = 5;
+  mode_window_ = newwin(height3, width3, start_y3, start_x3);
 
   // ??
   refresh();
@@ -43,10 +49,13 @@ Interface::Interface():
   // Draw outlines around the windows
   box(dialogue_window_, 0, 0);
   box(textbox_window_, 0, 0);
+  box(mode_window_, 0, 0);
+
 
   // Show the window
   wrefresh(dialogue_window_);
   wrefresh(textbox_window_);
+  wrefresh(mode_window_);
 
 
   input_thread_ = std::thread(&Interface::ReadInput, this);
@@ -64,16 +73,34 @@ Interface::~Interface() {
 void Interface::ReadInput() {
   std::string sentence;
   while (run_program_) {
+    // Update mode menu if there is any change
+    current_mode_ = std::max(0, current_mode_);
+    current_mode_ = std::min((int)kModeString.size() - 1, current_mode_);
+    for (int i = 0; i < kModeString.size(); ++i) {
+      if (current_mode_ == i) {
+        wattron(mode_window_, A_REVERSE);
+      }
+      mvwprintw(mode_window_, i + 1, 1, kModeString[i].c_str());
+      wattroff(mode_window_, A_REVERSE);
+    }
+    wrefresh(mode_window_);
+
+    // Read and process user input
     int c = wgetch(textbox_window_);
-    
-    if (c == kControlD) {
+    if (c == kUp) {
+      --current_mode_;
+    } else if (c == kDown) {
+      ++current_mode_;
+    } else if (c == kLeft || c == kRight) {
+      // Do nothing
+    } else if (c == kControlD) {
       run_program_ = false;
     } else if (c == kEnter) {
       sentence += c;
       
-      local_msgs_mutex_.lock();
-      local_msgs_.push(sentence);
-      local_msgs_mutex_.unlock();
+      local_inputs_mutex_.lock();
+      local_inputs_.push(std::make_pair(current_mode_, sentence));
+      local_inputs_mutex_.unlock();
 
       // Clear and redraw textbox
       sentence.clear();
