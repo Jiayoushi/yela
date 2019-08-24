@@ -177,16 +177,16 @@ bool Node::HandleRumorMessage(const Message &msg) {
 void Node::ProcessRumorMessage(const Message &msg) {
   // Log for debug
   Log("Received Rumor message from " + msg.id + " seq_number: " + 
-      std::to_string(msg.sequence_number) + " \"" + msg.chat_text + "\"");
+      std::to_string(msg.sequence_number) + " \"" + msg.content + "\"");
 
   // Store this message
-  text_storage_.Put(msg.id, msg.sequence_number, msg.chat_text);
+  text_storage_.Put(msg.id, msg.sequence_number, msg.content);
 
   // Send to random neighbor
   SendMessageToRandomPeer(msg);
 
   // Insert into dialogue to be printed
-  InsertToDialogue(msg.id, msg.chat_text);
+  InsertToDialogue(msg.id, msg.content);
 
   // Update sequence number table
   ++seq_num_table_[msg.id];

@@ -134,7 +134,7 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
   if (msg.message_type == kRumorMessage) {
     Log("Send rumor to " + target.id +  
         " (" + target.ip + "," + std::to_string(target.port) + ") " +
-        " \"" + msg.chat_text + "\"");
+        " \"" + msg.content + "\"");
   } else {
     std::string log_msg = "Send table to " + target.id + 
       " (" + target.ip + "," + std::to_string(target.port) + ") " + 

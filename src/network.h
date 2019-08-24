@@ -42,16 +42,16 @@ typedef int SequenceNumber;
 // table[id] is the expected next sequence number from id.
 typedef std::unordered_map<Id, SequenceNumber> SequenceNumberTable;
 
-typedef std::string ChatText;
+typedef std::string Content;
 
 struct Message {
  public:
   Message() {}
 
   // Constructor for rumor message
-  Message(const Id &i, const SequenceNumber &seq_num, const ChatText &text):
+  Message(const Id &i, const SequenceNumber &seq_num, const Content &text):
     message_type(kRumorMessage), sequence_number(seq_num), 
-    id(i), chat_text(text) {
+    id(i), content(text) {
 
   }
 
@@ -66,7 +66,7 @@ struct Message {
   // Rumor message
   SequenceNumber sequence_number;
   Id id;
-  ChatText chat_text;
+  Content content;
 
   // Status message
   SequenceNumberTable table;
@@ -74,7 +74,7 @@ struct Message {
   template<typename Archive>
   void serialize(Archive &archive) {
     archive(message_type,
-            sequence_number, id, chat_text,
+            sequence_number, id, content,
             table);
   }
 };

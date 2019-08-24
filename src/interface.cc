@@ -33,14 +33,14 @@ Interface::Interface():
 
   // Allocate textbox window
   int height2 = 3, width2 = kMaxScreenX - 25, 
-      start_y2 = kMaxScreenY - 13, start_x2 = 5;
+      start_y2 = kMaxScreenY - 12, start_x2 = 5;
   textbox_window_ = newwin(height2, width2, start_y2, start_x2);
   
   keypad(textbox_window_, true);
 
   // Allocate mode window
   int height3 = 6, width3 = 10,
-      start_y3 = kMaxScreenY - 10, start_x3 = 5;
+      start_y3 = kMaxScreenY - 8, start_x3 = 5;
   mode_window_ = newwin(height3, width3, start_y3, start_x3);
 
   // ??
@@ -149,14 +149,14 @@ void Interface::PrintDialogue() {
   }
 }
 
-void Interface::InsertToDialogue(const Id &id, const ChatText &chat_text) {
+void Interface::InsertToDialogue(const Id &id, const Content &content) {
   std::string formatted_msg;
   formatted_msg.reserve(64);
   formatted_msg.append("<");
   formatted_msg.append(id);
   formatted_msg.append(">");
   formatted_msg.append(": ");
-  formatted_msg.append(chat_text);
+  formatted_msg.append(content);
 
   dialogue_mutex_.lock();
   dialogue_.push_back(formatted_msg);

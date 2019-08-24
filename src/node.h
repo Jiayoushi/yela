@@ -15,7 +15,7 @@ class TextStorage {
  public:
   TextStorage() {}
 
-  void Put(const Id &id, const SequenceNumber &seq_num, const ChatText &text) {
+  void Put(const Id &id, const SequenceNumber &seq_num, const Content &text) {
     storage_[id][seq_num] = text;
   }
 
@@ -40,7 +40,7 @@ class TextStorage {
   }
 
  private:
-  std::unordered_map<Id, std::unordered_map<SequenceNumber, ChatText>> storage_;
+  std::unordered_map<Id, std::unordered_map<SequenceNumber, Content>> storage_;
 };
 
 

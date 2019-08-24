@@ -8,3 +8,4 @@
 5. HopLimit in DSDV
 6. it is better to make some periodic checking to event trigger style.
 7. private message between two nodes.
+8. BETTER way to serialize the message, so that is does not have that many of data types? How does QT handle this?
