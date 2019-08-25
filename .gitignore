@@ -9,6 +9,7 @@ Makefile
 build
 
 *log.txt
+*dialogue.txt
 
 tests/*.txt
 

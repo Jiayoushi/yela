@@ -1,2 +1,0 @@
-<apple>: i am apple
-<banana>: i am banan
