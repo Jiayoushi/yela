@@ -96,8 +96,13 @@ void Interface::ReadInput() {
     } else if (c == kControlD) {
       run_program_ = false;
     } else if (c == kEnter) {
-      sentence += c;
-      
+      if (sentence.size() == 0) {
+        continue;
+      }
+
+      if (current_mode_ == kChat) {
+        sentence += c;
+      }
       local_inputs_mutex_.lock();
       local_inputs_.push(std::make_pair(current_mode_, sentence));
       local_inputs_mutex_.unlock();

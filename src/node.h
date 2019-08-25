@@ -5,6 +5,7 @@
 #include <thread>
 #include <iostream>
 
+#include "file_manager.h"
 #include "network.h"
 #include "interface.h"
 #include "log.h"
@@ -74,6 +75,8 @@ class Node: public Interface, public Network {
   bool HandleRumorMessage(const Message &msg);
   void HandleMessageFromPeer();
   void HandleLocalHostInput();
+
+  FileManager file_manager_;
 };
 
 

@@ -208,7 +208,7 @@ void Node::HandleLocalHostInput() {
       Message msg(me_.id, seq_num_table_[me_.id], input.second);
       ProcessRumorMessage(msg);
     } else if (input.first == kUpload) {
-  
+      file_manager_.Upload(input.second);
     } else if (input.first == kDownload) {
 
     } else if (input.first == kSearch) {
