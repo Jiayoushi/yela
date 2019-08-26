@@ -69,8 +69,8 @@ void Node::HandleMessageFromPeer() {
   struct sockaddr_in peer_addr;
   socklen_t addrlen = sizeof(peer_addr);
   
-  char buf[kMaxMessageSize + 1];
-  int len = recvfrom(listen_fd_, buf, kMaxMessageSize, 0,
+  char buf[Message::kMaxMessageSize + 1];
+  int len = recvfrom(listen_fd_, buf, Message::kMaxMessageSize, 0,
               (struct sockaddr *)&peer_addr, &addrlen);
   if (len < 0) {
     perror("recvfrom failed");
@@ -81,17 +81,17 @@ void Node::HandleMessageFromPeer() {
 
   // Check if it is a new node first
   // If it is a new peer, parse its chat text in the form of IP:PORT, or HOSTNAME:PORT
-  if (!IsKnownPeer(msg.id)) {
-    InsertPeer(msg.id, peer_addr);
+  if (!IsKnownPeer(msg["id"])) {
+    InsertPeer(msg["id"], peer_addr);
   }
 
   // Handle message 
-  if (msg.message_type == kRumorMessage) {
+  if (msg["type"] == kTypes[kRumor]) {
     bool new_seq_num = HandleRumorMessage(msg);
     
     // Update destination-sequenced distance vector
     if (new_seq_num) {
-      UpdateDistanceVector(msg.id, peer_addr);
+      UpdateDistanceVector(msg["id"], peer_addr);
     }
   } else {
     HandleStatusMessage(msg);
@@ -102,8 +102,8 @@ void Node::HandleMessageFromPeer() {
 //  1. Check if the sender needs anything that can be sent from this node
 //  2. Check if this node needs anything that sender has already seen
 void Node::HandleStatusMessage(const Message &msg) {
-  Log("Received status message from " + msg.id);
-  const SequenceNumberTable &msg_sqn_table = msg.table;
+  Log("Received status message from " + msg["id"]);
+  const SequenceNumberTable msg_sqn_table = Message::Deserialize(msg["seqtable"]);
 
   bool send_status_message = false;
   for (auto p = msg_sqn_table.begin(); p != msg_sqn_table.end(); ++p) {
@@ -145,23 +145,23 @@ void Node::AcknowledgeMessage(const Id &id) {
 bool Node::HandleRumorMessage(const Message &msg) {
   bool new_seq_num = false;
 
-  if (msg.id == me_.id) {
+  if (msg["id"] == me_.id) {
     return new_seq_num;
   }
 
   // If a new id comes, the default sequence number for that id should be set
-  if (seq_num_table_.find(msg.id) == seq_num_table_.end()) {
-    seq_num_table_[msg.id] = kInitialSequenceNumber;
+  if (seq_num_table_.find(msg["id"]) == seq_num_table_.end()) {
+    seq_num_table_[msg["id"]] = kInitialSequenceNumber;
   }
 
-  int &last_sequence_number = seq_num_table_[msg.id];
-
+  int &last_sequence_number = seq_num_table_[msg["id"]];
+  int msg_seq_num = std::stoi(msg["seqnum"]);
   // A message already received, discard
-  if (msg.sequence_number < last_sequence_number) {
+  if (msg_seq_num < last_sequence_number) {
     return new_seq_num;
 
   // The expected message sequence number
-  } else if (msg.sequence_number == last_sequence_number) {
+  } else if (msg_seq_num == last_sequence_number) {
     ProcessRumorMessage(msg);
     new_seq_num = true;
   // Waiting for message with seq#1, instead seq#2 is received. Discard it.
@@ -170,26 +170,26 @@ bool Node::HandleRumorMessage(const Message &msg) {
   }
 
   // Acknowledge
-  AcknowledgeMessage(msg.id);
+  AcknowledgeMessage(msg["id"]);
   return new_seq_num;
 }
 
 void Node::ProcessRumorMessage(const Message &msg) {
   // Log for debug
-  Log("Received Rumor message from " + msg.id + " seq_number: " + 
-      std::to_string(msg.sequence_number) + " \"" + msg.content + "\"");
+  Log("Received Rumor message from " + msg["id"] + " seq_number: " + 
+      msg["seqnum"] + " \"" + msg["data"] + "\"");
 
   // Store this message
-  text_storage_.Put(msg.id, msg.sequence_number, msg.content);
+  text_storage_.Put(msg["id"], std::stoi(msg["seqnum"]), msg["data"]);
 
   // Send to random neighbor
   SendMessageToRandomPeer(msg);
 
   // Insert into dialogue to be printed
-  InsertToDialogue(msg.id, msg.content);
+  InsertToDialogue(msg["id"], msg["data"]);
 
   // Update sequence number table
-  ++seq_num_table_[msg.id];
+  ++seq_num_table_[msg["id"]];
 }
 
 // Read user input and send to random peer

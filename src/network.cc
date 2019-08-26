@@ -118,7 +118,7 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
   o_archive(msg);
 
   // Note: Copy byte by byte, do not append null character
-  char buf[kMaxMessageSize];
+  char buf[Message::kMaxMessageSize];
   for (int i = 0; i < ss.str().size(); ++i) {
     buf[i] = ss.str()[i];
   }
@@ -131,17 +131,15 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
   }
 
   // Log
-  if (msg.message_type == kRumorMessage) {
+  if (msg["type"] == kTypes[kRumor]) {
     Log("Send rumor to " + target.id +  
         " (" + target.ip + "," + std::to_string(target.port) + ") " +
-        " \"" + msg.content + "\"");
+        " \"" + msg["data"] + "\"");
   } else {
     std::string log_msg = "Send table to " + target.id + 
       " (" + target.ip + "," + std::to_string(target.port) + ") " + 
       " [";
-    for (auto p = msg.table.cbegin(); p != msg.table.cend(); ++p) {
-      log_msg += p->first + ":" + std::to_string(p->second) + " ";
-    }
+    log_msg += msg["seqtable"];
     if (log_msg.back() != '[') {
       log_msg.pop_back();
     }
@@ -156,11 +154,11 @@ void Network::SendMessageToRandomPeer(const Message &msg) {
   std::uniform_int_distribution<int> gen(0, distance_vector_.size() - 1);
   
   int random_index = gen(mt);
-  if (distance_vector_[random_index].id == msg.id) {
+  if (distance_vector_[random_index].id == msg["id"]) {
     return;
   }
 
-  if (msg.id.size() == 0) {
+  if (msg["id"].size() == 0) {
     Log("WARNING: message's id is not set");
   }
 
@@ -202,9 +200,9 @@ void Network::InsertPeer(const NetworkId &peer) {
   distance_vector_.push_back(peer);
 }
 
-void Network::UpdateDistanceVector(const Id &msg_id, const struct sockaddr_in &addr) {
+void Network::UpdateDistanceVector(const Id &id, const struct sockaddr_in &addr) {
   for (int i = 0; i < distance_vector_.size(); ++i) {
-    if (msg_id == distance_vector_[i].id) {
+    if (id == distance_vector_[i].id) {
       distance_vector_[i].ip = GetIp(addr);
       distance_vector_[i].port = GetPort(addr);
     }   

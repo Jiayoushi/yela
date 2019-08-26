@@ -16,8 +16,8 @@ class TextStorage {
  public:
   TextStorage() {}
 
-  void Put(const Id &id, const SequenceNumber &seq_num, const Content &text) {
-    storage_[id][seq_num] = text;
+  void Put(const Id &id, const SequenceNumber &seq_num, const Data &data) {
+    storage_[id][seq_num] = data;
   }
 
   std::string Get(const Id &id, const SequenceNumber &seq_num) {
@@ -41,7 +41,7 @@ class TextStorage {
   }
 
  private:
-  std::unordered_map<Id, std::unordered_map<SequenceNumber, Content>> storage_;
+  std::unordered_map<Id, std::unordered_map<SequenceNumber, Data>> storage_;
 };
 
 

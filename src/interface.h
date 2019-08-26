@@ -32,7 +32,7 @@ class Interface {
   };
   std::vector<std::string> inputs_;
 
-  void InsertToDialogue(const Id &id, const Content &content);
+  void InsertToDialogue(const Id &id, const std::string &data);
   void WriteDialogueToFile(const Id &id);
 
   const int kPrintFrequencyInMs = 500;

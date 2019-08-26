@@ -50,7 +50,7 @@ void FileManager::Upload(const std::string &filename) {
   Log("Upload file succeed: \"" + file.name + "\"  \n" + 
       "meta sha1: \n" + Sha1ToString(file.meta_sha1) + "\n" +
       "content sha1: \n" + Sha1ToString(file.content_sha1) + "\n" + 
-      "file size: \n" + std::to_string(file.size)) + "\n";
+      "file size: \n" + std::to_string(file.size) + "\n");
 }
 
 std::string FileManager::Sha1ToString(const ustring &sha1) {

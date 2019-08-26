@@ -13,7 +13,8 @@ add_executable(yela
                src/network.cc
                src/interface.cc
                src/log.cc
-               src/file_manager.cc)
+               src/file_manager.cc
+               src/message.cc)
 target_link_libraries(yela Threads::Threads)
 target_link_libraries(yela ${CURSES_LIBRARIES})
 target_link_libraries(yela crypto)

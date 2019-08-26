@@ -154,14 +154,14 @@ void Interface::PrintDialogue() {
   }
 }
 
-void Interface::InsertToDialogue(const Id &id, const Content &content) {
+void Interface::InsertToDialogue(const Id &id, const Data &data) {
   std::string formatted_msg;
   formatted_msg.reserve(64);
   formatted_msg.append("<");
   formatted_msg.append(id);
   formatted_msg.append(">");
   formatted_msg.append(": ");
-  formatted_msg.append(content);
+  formatted_msg.append(data);
 
   dialogue_mutex_.lock();
   dialogue_.push_back(formatted_msg);
