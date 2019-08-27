@@ -9,8 +9,8 @@ Message::Message() {
 }
 
 Message::Message(const Id &id, const SequenceNumber &seq_num,
-  const std::string &data) {
-  ConstructRumorMessage(id, seq_num, data);
+  const std::string &data, const long timestamp) {
+  ConstructRumorMessage(id, seq_num, data, timestamp);
 }
 
 Message::Message(const Id &id, const SequenceNumberTable &table) {
@@ -18,11 +18,12 @@ Message::Message(const Id &id, const SequenceNumberTable &table) {
 }
 
 void Message::ConstructRumorMessage(const Id &id, const SequenceNumber &seq_num,
-  const std::string &data) {
+  const std::string &data, const long timestamp) {
   kv_map_["type"] = kTypes[kRumor];
   kv_map_["id"] = id;
   kv_map_["seqnum"] = std::to_string(seq_num);
   kv_map_["data"] = data;
+  kv_map_["timestamp"] = std::to_string(timestamp);
 }
 
 void Message::ConstructStatusMessage(const Id &id, const SequenceNumberTable &table) {

@@ -28,13 +28,15 @@ enum kTypeKeys {
 // seqnum
 // data
 // seqtable
+// timestamp
 class Message {
  public:
   const static size_t kMaxMessageSize = 1024;
   const std::string kEmptyString = "";
 
   Message();
-  Message(const Id &id, const SequenceNumber &seq_num, const std::string &data);
+  Message(const Id &id, const SequenceNumber &seq_num, const std::string &data, 
+          const long timestamp);
   Message(const Id &id, const SequenceNumberTable &table);
 
   std::string & operator[](const std::string &key);
@@ -51,7 +53,7 @@ class Message {
   std::string SeqTableToString(const SequenceNumberTable &table);
 
   void ConstructRumorMessage(const Id &id, const SequenceNumber &seq_num,
-                             const std::string &data);
+                             const std::string &data, const long timestamp);
   void ConstructStatusMessage(const Id &id, const SequenceNumberTable &table);
 };
 

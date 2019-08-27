@@ -66,6 +66,7 @@ void Network::InitializeEpoll() {
   }
 
   // Listen to remote message
+  memset(&peer_event_, 0, sizeof(peer_event_));
   peer_event_.events = EPOLLIN;
   peer_event_.data.fd = listen_fd_;
   if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, listen_fd_, &peer_event_) < 0) {

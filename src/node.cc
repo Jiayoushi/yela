@@ -13,6 +13,7 @@
 #include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <chrono>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 
@@ -117,8 +118,8 @@ void Node::HandleStatusMessage(const Message &msg) {
     }
 
     if (seq_num_table_[id] > seq_num) {
-      SendMessageToRandomPeer(Message(id, seq_num, 
-                                      text_storage_.Get(id, seq_num)));
+      const Chat chat = text_storage_.Get(id, seq_num);
+      SendMessageToRandomPeer(Message(id, seq_num, chat.content, chat.timestamp));
     } else if (seq_num_table_[id] < seq_num) {
       Log("wants to have seq_num: " + std::to_string(seq_num_table_[id]) + 
           " from " + id);
@@ -177,16 +178,18 @@ bool Node::HandleRumorMessage(const Message &msg) {
 void Node::ProcessRumorMessage(const Message &msg) {
   // Log for debug
   Log("Received Rumor message from " + msg["id"] + " seq_number: " + 
-      msg["seqnum"] + " \"" + msg["data"] + "\"");
+      msg["seqnum"] + " \"" + msg["data"] + "\" timestamp:" + msg["timestamp"]);
 
   // Store this message
-  text_storage_.Put(msg["id"], std::stoi(msg["seqnum"]), msg["data"]);
+  text_storage_.Put(msg["id"], std::stoi(msg["seqnum"]), msg["data"], 
+                    std::stol(msg["timestamp"]));
 
   // Send to random neighbor
   SendMessageToRandomPeer(msg);
 
   // Insert into dialogue to be printed
-  InsertToDialogue(msg["id"], msg["data"]);
+  Chat chat(msg["data"], std::stol(msg["timestamp"]));
+  InsertToDialogue(msg["id"], msg["data"], std::stol(msg["timestamp"]));
 
   // Update sequence number table
   ++seq_num_table_[msg["id"]];
@@ -197,29 +200,29 @@ void Node::HandleLocalHostInput() {
   local_inputs_mutex_.lock();
 
   while (local_inputs_.size() != 0) {
-    const std::pair<int, std::string> &input = local_inputs_.front();
+    const Input &input = local_inputs_.front();
 
-    if (input.second == kExitMsgForTesting) {
+    if (input.sentence == kExitMsgForTesting) {
       run_program_ = false;
       return;
     }
 
-    if (input.first == kChat) {
-      Message msg(me_.id, seq_num_table_[me_.id], input.second);
+    if (input.mode == kChat) {
+      Message msg(me_.id, seq_num_table_[me_.id], input.sentence, input.timestamp);
       ProcessRumorMessage(msg);
-    } else if (input.first == kUpload) {
-      int status = file_manager_.Upload(input.second);
+    } else if (input.mode == kUpload) {
+      int status = file_manager_.Upload(input.sentence);
       if (status == 0) {
-        PrintToSystemWindow("File '" + input.second + "' has been successfully uploaded.");
+        PrintToSystemWindow("File '" + input.sentence + "' has been successfully uploaded.");
       } else if (status == -1) {
-        PrintToSystemWindow("File '" + input.second + "' is not found.");
+        PrintToSystemWindow("File '" + input.sentence + "' is not found.");
       }
-    } else if (input.first == kDownload) {
+    } else if (input.mode == kDownload) {
 
-    } else if (input.first == kSearch) {
+    } else if (input.mode == kSearch) {
 
     } else {
-      Log("WARNING: current input mode " + std::to_string(input.first) + 
+      Log("WARNING: current input mode " + std::to_string(input.mode) + 
       " is not matched to any of the mode");
     }
 

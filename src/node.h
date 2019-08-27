@@ -16,17 +16,18 @@ class TextStorage {
  public:
   TextStorage() {}
 
-  void Put(const Id &id, const SequenceNumber &seq_num, const Data &data) {
-    storage_[id][seq_num] = data;
+  void Put(const Id &id, const SequenceNumber &seq_num, const std::string &content,
+           const long timestamp) {
+    storage_[id][seq_num] = Chat(content, timestamp);
   }
 
-  std::string Get(const Id &id, const SequenceNumber &seq_num) {
+  Chat Get(const Id &id, const SequenceNumber &seq_num) {
     auto p = storage_.find(id);
     if (p == storage_.end()) {
       std::string msg = "ERROR: message storage failed to map id: " + id +
        " with sequence number " + std::to_string(seq_num);
       Log(msg);
-      return "";
+      return Chat();
     }
 
     auto x = p->second.find(seq_num);
@@ -34,14 +35,14 @@ class TextStorage {
       std::string msg = "ERROR: message storage failed to map sequence number: "
         + std::to_string(seq_num) + " from id: " + id;
       Log(msg);
-      return "";
+      return Chat();
     }
 
     return storage_[id][seq_num];
   }
 
  private:
-  std::unordered_map<Id, std::unordered_map<SequenceNumber, Data>> storage_;
+  std::unordered_map<Id, std::unordered_map<SequenceNumber, Chat>> storage_;
 };
 
 

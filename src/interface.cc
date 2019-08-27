@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <iostream>
+#include <ctime>
 
 #include "log.h"
 
@@ -70,7 +71,9 @@ Interface::Interface():
 Interface::~Interface() {
   input_thread_.join();
   print_thread_.join();
-  endwin();
+  if (endwin() == ERR) {
+    Log("ERROR: Failed to endwin");
+  }
 }
 
 // Read local user input 
@@ -109,7 +112,8 @@ void Interface::ReadInput() {
         sentence += c;
       }
       local_inputs_mutex_.lock();
-      local_inputs_.push(std::make_pair(current_mode_, sentence));
+      local_inputs_.push(Input(current_mode_, sentence, 
+                               (long)std::time(nullptr)));
       local_inputs_mutex_.unlock();
 
       // Clear and redraw textbox
@@ -143,23 +147,24 @@ void Interface::PrintDialogue() {
    
     // Print the latest limited number of messages
     dialogue_mutex_.lock();
-    int end = dialogue_.size();
-    // 30 - 30 == 0
-    int start = std::max(0, end - kMaxMsgToPrint);
+
     int y_pos = 1;
     int x_pos = 1;
-    for (int i = start; i < end; ++i) {
-      mvwprintw(dialogue_window_, y_pos, x_pos, dialogue_[i].c_str());
+    std::priority_queue<Chat, std::vector<Chat>, CompareChat> dialogue = dialogue_;
+    while (dialogue.size() != 0) {
+      mvwprintw(dialogue_window_, y_pos, x_pos, dialogue.top().content.c_str());
       box(dialogue_window_, 0, 0);
       wrefresh(dialogue_window_);
       ++y_pos;
+      dialogue.pop();
     }
 
     dialogue_mutex_.unlock();
   }
 }
 
-void Interface::InsertToDialogue(const Id &id, const Data &data) {
+void Interface::InsertToDialogue(const Id &id, const Data &data, 
+                                 const long timestamp) {
   std::string formatted_msg;
   formatted_msg.reserve(64);
   formatted_msg.append("<");
@@ -169,7 +174,7 @@ void Interface::InsertToDialogue(const Id &id, const Data &data) {
   formatted_msg.append(data);
 
   dialogue_mutex_.lock();
-  dialogue_.push_back(formatted_msg);
+  dialogue_.push(Chat(formatted_msg, timestamp));
   dialogue_mutex_.unlock();
 }
 
@@ -177,8 +182,9 @@ void Interface::WriteDialogueToFile(const Id &id) {
   const std::string kFileName = id + "_dialogue.txt";
   std::ofstream of;
   of.open(kFileName);
-  for (const std::string &s: dialogue_) {
-    of << s;
+  while (dialogue_.size() != 0) {
+    of << dialogue_.top().content;
+    dialogue_.pop();
   }
   of.close();
 }

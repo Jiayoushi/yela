@@ -13,6 +13,20 @@
 
 namespace yela {
 
+struct Chat {
+  std::string content; // <ID>: user's sentence
+  long timestamp;
+
+  Chat() {
+ 
+  }
+
+  Chat(const std::string &c, const long t):
+    content(c), timestamp(t) {
+
+  }
+};
+
 class Interface {
  public:
   Interface();
@@ -32,7 +46,8 @@ class Interface {
   };
   std::vector<std::string> inputs_;
 
-  void InsertToDialogue(const Id &id, const std::string &data);
+  void InsertToDialogue(const Id &id, const std::string &data, 
+                        const long timestamp);
   void WriteDialogueToFile(const Id &id);
 
   const int kPrintFrequencyInMs = 500;
@@ -55,7 +70,19 @@ class Interface {
   };
 
   std::mutex local_inputs_mutex_;
-  std::queue<std::pair<int, std::string>> local_inputs_;
+
+  struct Input {
+    int mode;
+    std::string sentence;
+    long timestamp;
+
+    Input(int m, const std::string &s, const time_t &t):
+      mode(m), sentence(s), timestamp(t) {
+
+    }
+  };
+  std::queue<Input> local_inputs_;
+
  private:
   WINDOW *dialogue_window_;
   WINDOW *textbox_window_;
@@ -68,8 +95,13 @@ class Interface {
   // Thread that manages printing dialogue
   std::thread print_thread_;
 
+  struct CompareChat {
+    bool operator()(const Chat &chat1, const Chat &chat2) {
+      return chat1.timestamp > chat2.timestamp;
+    }
+  };
+  std::priority_queue<Chat, std::vector<Chat>, CompareChat> dialogue_;
   std::mutex dialogue_mutex_;
-  std::vector<std::string> dialogue_;
 
   std::vector<std::string> system_messages_;
 };
