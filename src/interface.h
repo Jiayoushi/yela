@@ -38,6 +38,7 @@ class Interface {
   const int kPrintFrequencyInMs = 500;
   int kMaxMsgToPrint;
   void PrintDialogue();
+  void PrintToSystemWindow(const std::string &s);
   void ReadInput();
 
   // Menu for options for either chat, upload file, download file or search file
@@ -54,11 +55,12 @@ class Interface {
   };
 
   std::mutex local_inputs_mutex_;
-  std::queue<std::pair<int, std::string>> local_inputs_; 
+  std::queue<std::pair<int, std::string>> local_inputs_;
  private:
   WINDOW *dialogue_window_;
   WINDOW *textbox_window_;
   WINDOW *mode_window_;
+  WINDOW *system_window_;
 
   // Thread that manages local user input
   std::thread input_thread_;
@@ -68,6 +70,8 @@ class Interface {
 
   std::mutex dialogue_mutex_;
   std::vector<std::string> dialogue_;
+
+  std::vector<std::string> system_messages_;
 };
 
 }

@@ -11,7 +11,7 @@ FileManager::FileManager():
 
 }
 
-void FileManager::Upload(const std::string &filename) {
+int FileManager::Upload(const std::string &filename) {
   files_.push_back(FileInfo());
 
   FileInfo &file = files_.back();
@@ -20,7 +20,7 @@ void FileManager::Upload(const std::string &filename) {
   std::ifstream fs(file.name, std::ios_base::binary);
   if (!fs.is_open()) {
     Log("Upload file failed: unable to open file \"" + file.name + "\"");
-    return;
+    return -1;
   }
 
   for (int bytes_read = -1; bytes_read != 0; ) {
@@ -51,6 +51,8 @@ void FileManager::Upload(const std::string &filename) {
       "meta sha1: \n" + Sha1ToString(file.meta_sha1) + "\n" +
       "content sha1: \n" + Sha1ToString(file.content_sha1) + "\n" + 
       "file size: \n" + std::to_string(file.size) + "\n");
+
+  return 0;
 }
 
 std::string FileManager::Sha1ToString(const ustring &sha1) {

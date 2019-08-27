@@ -52,7 +52,6 @@ SequenceNumberTable Message::Deserialize(const std::string &table) {
   while (getline(iss, word, ' ')) {
     int sep_index = word.find(':');
     std::string key = word.substr(0, sep_index);
-    // ab:cde
     std::string val = word.substr(sep_index + 1, word.size() - sep_index - 1);
 
     t[key] = std::stoi(val);

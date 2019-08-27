@@ -25,35 +25,40 @@ Interface::Interface():
   getmaxyx(stdscr, kMaxScreenY, kMaxScreenX);
 
   // Allocate dialogue window
-  int height = 30, width = kMaxScreenX - 12, start_y = 0, start_x = 0;
-  dialogue_window_ = newwin(height, width, start_y, start_x);
-
+  int dheight = 30, dwidth = kMaxScreenX / 2 - 5, dstart_y = 0, dstart_x = 0;
+  dialogue_window_ = newwin(dheight, dwidth, dstart_y, dstart_x);
   // How many messages to fit in one screen?
-  kMaxMsgToPrint = height - 2;
+  kMaxMsgToPrint = dheight - 2;
+
+  // Allocate system message window
+  int sheight = 30, swidth = dwidth, 
+      sstart_y = 0, sstart_x = dwidth + 5;
+  system_window_ = newwin(sheight, swidth, sstart_y, sstart_x);
 
   // Allocate textbox window
-  int height2 = 3, width2 = kMaxScreenX - 25, 
-      start_y2 = kMaxScreenY - 12, start_x2 = 5;
-  textbox_window_ = newwin(height2, width2, start_y2, start_x2);
+  int theight = 3, twidth = kMaxScreenX - 25, 
+      tstart_y = kMaxScreenY - 12, tstart_x = 10;
+  textbox_window_ = newwin(theight, twidth, tstart_y, tstart_x);
   
   keypad(textbox_window_, true);
 
   // Allocate mode window
-  int height3 = 6, width3 = 10,
-      start_y3 = kMaxScreenY - 8, start_x3 = 5;
-  mode_window_ = newwin(height3, width3, start_y3, start_x3);
+  int mheight = 6, mwidth = 10,
+      mstart_y = kMaxScreenY - 8, mstart_x = 5;
+  mode_window_ = newwin(mheight, mwidth, mstart_y, mstart_x);
 
   // ??
   refresh();
 
   // Draw outlines around the windows
   box(dialogue_window_, 0, 0);
+  box(system_window_, 0, 0);
   box(textbox_window_, 0, 0);
   box(mode_window_, 0, 0);
 
-
   // Show the window
   wrefresh(dialogue_window_);
+  wrefresh(system_window_);
   wrefresh(textbox_window_);
   wrefresh(mode_window_);
 
@@ -176,6 +181,21 @@ void Interface::WriteDialogueToFile(const Id &id) {
     of << s;
   }
   of.close();
+}
+
+void Interface::PrintToSystemWindow(const std::string &s) {
+  system_messages_.push_back(s);
+
+  int end = system_messages_.size();
+  int start = std::max(0, end - kMaxMsgToPrint);
+  int y_pos = 1;
+  int x_pos = 1;
+  for (int i = start; i < end; ++i) {
+    mvwprintw(system_window_, y_pos, x_pos, system_messages_[i].c_str());
+    box(system_window_, 0, 0);
+    wrefresh(system_window_);
+    ++y_pos;
+  }
 }
 
 }

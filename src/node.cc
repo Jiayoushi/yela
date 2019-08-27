@@ -208,7 +208,12 @@ void Node::HandleLocalHostInput() {
       Message msg(me_.id, seq_num_table_[me_.id], input.second);
       ProcessRumorMessage(msg);
     } else if (input.first == kUpload) {
-      file_manager_.Upload(input.second);
+      int status = file_manager_.Upload(input.second);
+      if (status == 0) {
+        PrintToSystemWindow("File '" + input.second + "' has been successfully uploaded.");
+      } else if (status == -1) {
+        PrintToSystemWindow("File '" + input.second + "' is not found.");
+      }
     } else if (input.first == kDownload) {
 
     } else if (input.first == kSearch) {

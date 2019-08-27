@@ -30,7 +30,7 @@ struct FileInfo {
 class FileManager {
  public:
   FileManager();
-  void Upload(const std::string &filename); 
+  int Upload(const std::string &filename); 
  private:
   void GetSha1(const void *content, size_t size, unsigned char *md);
   std::string Sha1ToString(const ustring &sha1);
