@@ -40,6 +40,10 @@ void Node::PollEvents() {
   int event_count = epoll_wait(epoll_fd_, events_, 
                                kMaxEventsNum, kEpollFrequencyInMs);
   if (event_count < 0) {
+    if (errno == EINTR) {
+      return;
+    }
+
     perror("Error: epoll_wait failed");                                               
     exit(EXIT_FAILURE);
   } else if (event_count == 0) {
