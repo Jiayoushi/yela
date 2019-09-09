@@ -31,18 +31,20 @@ class Network {
   Network(const std::string &settings_file);
   ~Network();
 
- private:
-  void ReadSettings(const std::string &settings_file);
-  NetworkId ParseSettingLine(const std::string &line);
-  void SendMessage(const NetworkId &id, const Message &msg);
+  const Id & GetId();
 
- protected:
-  int listen_fd_; 
+  // Message
   void SendMessageToRandomPeer(const Message &msg);
-
-  void Listen();
   Message ParseMessage(const char *data, const int size);
-  
+
+  // Dynamically peers
+  bool IsKnownPeer(const std::string &id);
+  void InsertPeer(const NetworkId &peer);
+  void InsertPeer(const Id &id, const struct sockaddr_in &addr);
+  void UpdateDistanceVector(const Id &id, const struct sockaddr_in &addr);
+
+  // Epoll 
+  // TODO: should be refactored
   static const int kMaxEventsNum = 256;
   struct epoll_event events_[kMaxEventsNum];
 
@@ -51,24 +53,31 @@ class Network {
   struct epoll_event input_event_;
   struct epoll_event peer_event_;
 
+  int listen_fd_;
+ private:
+  // Init
+  void ReadSettings(const std::string &settings_file);
+  NetworkId ParseSettingLine(const std::string &line);
+  
+  // Message
+  void SendMessage(const NetworkId &id, const Message &msg);
+
+ 
+  void Listen();
   void InitializeEpoll();
 
   // Helper functions
   std::string GetIp(const struct sockaddr_in &addr);
   int GetPort(const struct sockaddr_in &addr);
 
-  void InsertPeer(const Id &id, const struct sockaddr_in &addr);
 
   // This node's network id
   NetworkId me_;
 
   // All nodes' network id
   std::vector<NetworkId> distance_vector_;
-  void UpdateDistanceVector(const Id &id, const struct sockaddr_in &addr);
 
-  // Dynamically peers
-  bool IsKnownPeer(const std::string &id);
-  void InsertPeer(const NetworkId &peer);
+
 };
 
 }

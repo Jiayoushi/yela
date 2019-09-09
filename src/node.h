@@ -47,13 +47,20 @@ class TextStorage {
 
 
 
-class Node: public Interface, public Network {
+class Node {
  public:
   Node(const std::string &settings_file);
   ~Node();
 
   void Run();
  private:
+  // Components
+  Interface interface_;
+  Network network_;
+
+  // Information about this node
+  Id id_;
+
   const std::string kExitMsgForTesting = "nSQ5oCay0gG6qNJURWxZ";
   void PollEvents();
 
@@ -76,6 +83,8 @@ class Node: public Interface, public Network {
   bool HandleRumorMessage(const Message &msg);
   void HandleMessageFromPeer();
   void HandleLocalHostInput();
+  
+  void FileUploadPostAction(int status, const std::string &filename);
 
   FileManager file_manager_;
 };

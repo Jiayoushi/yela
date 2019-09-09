@@ -20,25 +20,31 @@
 namespace yela {
 
 Node::Node(const std::string &settings_file):
-  Network(settings_file),
+  network_(settings_file),
+  interface_(),
   send_table_thread(&Node::SendTableToRandomPeer, this) {
 
-  InitLog(me_.id);
+  id_ = network_.GetId();
+
+  // Initialize logger
+  InitLog(id_);
 
   // Every node keeps its own sequence number.
-  seq_num_table_[me_.id] = kInitialSequenceNumber;
+  seq_num_table_[id_] = kInitialSequenceNumber;
 }
 
 Node::~Node() {
   send_table_thread.join();
-  Log(me_.id + " successfully terminated.");
+  Log(id_ + " successfully terminated.");
   CloseLog();
-  WriteDialogueToFile(me_.id);
+  interface_.WriteDialogueToFile(id_);
 }
 
+
+// TODO: network module should handle this
 void Node::PollEvents() {
-  int event_count = epoll_wait(epoll_fd_, events_, 
-                               kMaxEventsNum, kEpollFrequencyInMs);
+  int event_count = epoll_wait(network_.epoll_fd_, network_.events_, 
+                               network_.kMaxEventsNum, network_.kEpollFrequencyInMs);
   if (event_count < 0) {
     if (errno == EINTR) {
       return;
@@ -48,12 +54,12 @@ void Node::PollEvents() {
     exit(EXIT_FAILURE);
   } else if (event_count == 0) {
     // Check if there is any local user input
-    if (local_inputs_.size() > 0) {
+    if (interface_.local_inputs_.size() > 0) {
       HandleLocalHostInput();
     }
   } else {
     for (int i = 0; i < event_count; ++i) {
-      if (events_[i].data.fd == listen_fd_) {
+      if (network_.events_[i].data.fd == network_.listen_fd_) {
         HandleMessageFromPeer();
       } else {
         std::cerr << "Unmatched file descriptor" << std::endl;
@@ -63,9 +69,9 @@ void Node::PollEvents() {
 }
 
 void Node::SendTableToRandomPeer() {
-  while (run_program_) {
-    Message status_message(me_.id, seq_num_table_);
-    SendMessageToRandomPeer(status_message);
+  while (interface_.run_program_) {
+    Message status_message(id_, seq_num_table_);
+    network_.SendMessageToRandomPeer(status_message);
     std::this_thread::sleep_for(std::chrono::milliseconds(kPeriodInMs));
   }
 }
@@ -75,19 +81,19 @@ void Node::HandleMessageFromPeer() {
   socklen_t addrlen = sizeof(peer_addr);
   
   char buf[Message::kMaxMessageSize + 1];
-  int len = recvfrom(listen_fd_, buf, Message::kMaxMessageSize, 0,
+  int len = recvfrom(network_.listen_fd_, buf, Message::kMaxMessageSize, 0,
               (struct sockaddr *)&peer_addr, &addrlen);
   if (len < 0) {
     perror("recvfrom failed");
     return;
   }
 
-  Message msg = ParseMessage(buf, len);
+  Message msg = network_.ParseMessage(buf, len);
 
   // Check if it is a new node first
   // If it is a new peer, parse its chat text in the form of IP:PORT, or HOSTNAME:PORT
-  if (!IsKnownPeer(msg["id"])) {
-    InsertPeer(msg["id"], peer_addr);
+  if (!network_.IsKnownPeer(msg["id"])) {
+    network_.InsertPeer(msg["id"], peer_addr);
   }
 
   // Handle message 
@@ -96,7 +102,7 @@ void Node::HandleMessageFromPeer() {
     
     // Update destination-sequenced distance vector
     if (new_seq_num) {
-      UpdateDistanceVector(msg["id"], peer_addr);
+      network_.UpdateDistanceVector(msg["id"], peer_addr);
     }
   } else {
     HandleStatusMessage(msg);
@@ -123,7 +129,7 @@ void Node::HandleStatusMessage(const Message &msg) {
 
     if (seq_num_table_[id] > seq_num) {
       const Chat chat = text_storage_.Get(id, seq_num);
-      SendMessageToRandomPeer(Message(id, seq_num, chat.content, chat.timestamp));
+      network_.SendMessageToRandomPeer(Message(id, seq_num, chat.content, chat.timestamp));
     } else if (seq_num_table_[id] < seq_num) {
       Log("wants to have seq_num: " + std::to_string(seq_num_table_[id]) + 
           " from " + id);
@@ -134,23 +140,23 @@ void Node::HandleStatusMessage(const Message &msg) {
   // This node has found message it has not received, send status message
   // letting others know this node want unrecieved messages.
   if (send_status_message) {
-    SendMessageToRandomPeer(Message(me_.id, seq_num_table_));
+    network_.SendMessageToRandomPeer(Message(id_, seq_num_table_));
   }
 }
 
 // Since it's UDP, we need to resend messages if datagrams are dropped
 // The ack message is a status message 
 void Node::AcknowledgeMessage(const Id &id) {
-  Message status_message(me_.id, seq_num_table_);
+  Message status_message(id_, seq_num_table_);
 
   // TODO: Need to send to the sender
-  SendMessageToRandomPeer(status_message);
+  network_.SendMessageToRandomPeer(status_message);
 }
 
 bool Node::HandleRumorMessage(const Message &msg) {
   bool new_seq_num = false;
 
-  if (msg["id"] == me_.id) {
+  if (msg["id"] == id_) {
     return new_seq_num;
   }
 
@@ -174,8 +180,6 @@ bool Node::HandleRumorMessage(const Message &msg) {
     // Discard
   }
 
-  // Acknowledge
-  AcknowledgeMessage(msg["id"]);
   return new_seq_num;
 }
 
@@ -189,11 +193,11 @@ void Node::ProcessRumorMessage(const Message &msg) {
                     std::stol(msg["timestamp"]));
 
   // Send to random neighbor
-  SendMessageToRandomPeer(msg);
+  network_.SendMessageToRandomPeer(msg);
 
   // Insert into dialogue to be printed
   Chat chat(msg["data"], std::stol(msg["timestamp"]));
-  InsertToDialogue(msg["id"], msg["data"], std::stol(msg["timestamp"]));
+  interface_.InsertToDialogue(msg["id"], msg["data"], std::stol(msg["timestamp"]));
 
   // Update sequence number table
   ++seq_num_table_[msg["id"]];
@@ -201,43 +205,48 @@ void Node::ProcessRumorMessage(const Message &msg) {
 
 // Read user input and send to random peer
 void Node::HandleLocalHostInput() {
-  local_inputs_mutex_.lock();
+  interface_.local_inputs_mutex_.lock();
 
-  while (local_inputs_.size() != 0) {
-    const Input &input = local_inputs_.front();
+  while (interface_.local_inputs_.size() != 0) {
+    const Input &input = interface_.local_inputs_.front();
 
-    if (input.sentence == kExitMsgForTesting) {
-      run_program_ = false;
+    if (input.content == kExitMsgForTesting) {
+      interface_.run_program_ = false;
       return;
     }
 
     if (input.mode == kChat) {
-      Message msg(me_.id, seq_num_table_[me_.id], input.sentence, input.timestamp);
+      Message msg(id_, seq_num_table_[id_], input.content, input.timestamp);
       ProcessRumorMessage(msg);
     } else if (input.mode == kUpload) {
-      int status = file_manager_.Upload(input.sentence);
-      if (status == 0) {
-        PrintToSystemWindow("File '" + input.sentence + "' has been successfully uploaded.");
-      } else if (status == -1) {
-        PrintToSystemWindow("File '" + input.sentence + "' is not found.");
-      }
+      int status = file_manager_.Upload(input.content);
+      FileUploadPostAction(status, input.content);
     } else if (input.mode == kDownload) {
-
+      file_manager_.Download(input.content);      
     } else if (input.mode == kSearch) {
-
+      // TODO:
+      file_manager_.Search(input.content);
     } else {
       Log("WARNING: current input mode " + std::to_string(input.mode) + 
       " is not matched to any of the mode");
     }
 
-    local_inputs_.pop();
+    interface_.local_inputs_.pop();
   }
 
-  local_inputs_mutex_.unlock();
+  interface_.local_inputs_mutex_.unlock();
+}
+
+void Node::FileUploadPostAction(int status, const std::string &filename) {
+  if (status == 0) {
+    interface_.PrintToSystemWindow("File '" + filename + "' has been successfully uploaded.");
+  } else if (status == -1) {
+    interface_.PrintToSystemWindow("File '" + filename + "' is not found.");
+  }
 }
 
 void Node::Run() {
-  while (run_program_) {
+  while (interface_.run_program_) {
     PollEvents();
   }
 }

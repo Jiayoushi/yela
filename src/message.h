@@ -22,13 +22,19 @@ enum kTypeKeys {
   kRumor = 0, kStatus, kBlockRequest, kBlockReply
 };
 
-// Access Key
-// type
-// id
-// seqnum
-// data
-// seqtable
-// timestamp
+// [Access Key]
+// 
+// For basic message:
+//  type
+//  id
+//  seqnum
+//  data
+//  seqtable
+//  timestamp
+//
+// For files sharing:
+//  dest
+//  sha1
 class Message {
  public:
   const static size_t kMaxMessageSize = 1024;

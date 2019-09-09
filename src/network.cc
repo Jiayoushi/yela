@@ -39,6 +39,10 @@ NetworkId Network::ParseSettingLine(const std::string &line) {
   return NetworkId(items[0], items[1], items[3], atoi(items[2].c_str()));
 }
 
+const Id & Network::GetId() {
+  return me_.id;
+}
+
 void Network::ReadSettings(const std::string &settings_file) {
   std::ifstream f(settings_file);
   if (!f.is_open()) {

@@ -79,7 +79,7 @@ Interface::~Interface() {
 // Read local user input 
 // This is another thread
 void Interface::ReadInput() {
-  std::string sentence;
+  std::string content;
   while (run_program_) {
     // Update mode menu if there is any change
     current_mode_ = std::max(0, current_mode_);
@@ -104,39 +104,39 @@ void Interface::ReadInput() {
     } else if (c == kControlD) {
       run_program_ = false;
     } else if (c == kEnter) {
-      if (sentence.size() == 0) {
+      if (content.size() == 0) {
         continue;
       }
 
       if (current_mode_ == kChat) {
-        sentence += c;
+        content += c;
       }
       local_inputs_mutex_.lock();
-      local_inputs_.push(Input(current_mode_, sentence, 
+      local_inputs_.push(Input(current_mode_, content, 
                                (long)std::time(nullptr)));
       local_inputs_mutex_.unlock();
 
       // Clear and redraw textbox
-      sentence.clear();
+      content.clear();
       wclear(textbox_window_);
       box(textbox_window_, 0, 0);
       wrefresh(textbox_window_);
     } else if (c == kBackspace) {
-      if (sentence.size() == 0) {
+      if (content.size() == 0) {
         continue;
       }
-      sentence.pop_back();
+      content.pop_back();
 
       // Clear and redraw textbox and text
       wclear(textbox_window_);
       box(textbox_window_, 0, 0);
-      mvwprintw(textbox_window_, 1, 1, sentence.c_str());
+      mvwprintw(textbox_window_, 1, 1, content.c_str());
       wrefresh(textbox_window_);
     } else {
-      sentence += c;
+      content += c;
 
       // Just print it
-      mvwprintw(textbox_window_, 1, 1, sentence.c_str());
+      mvwprintw(textbox_window_, 1, 1, content.c_str());
     }
   }
 }

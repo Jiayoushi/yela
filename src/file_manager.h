@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "message.h"
 #include "log.h"
 
 namespace yela {
@@ -30,6 +31,10 @@ struct FileInfo {
 class FileManager {
  public:
   FileManager();
+
+  void Search(const std::string &filename);
+  void HandleReply(const Message &msg);
+  void Download(const std::string &filename);
   int Upload(const std::string &filename); 
  private:
   void GetSha1(const void *content, size_t size, unsigned char *md);

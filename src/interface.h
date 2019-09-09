@@ -13,6 +13,25 @@
 
 namespace yela {
 
+struct Input {
+  int mode;
+  std::string content;
+  long timestamp;
+
+  Input(int m, const std::string &s, const time_t &t):
+    mode(m), content(s), timestamp(t) {
+
+  }
+};
+
+// Menu for options for either chat, upload file, download file or search file
+enum Mode {
+  kChat = 0, 
+  kUpload = 1, 
+  kDownload = 2, 
+  kSearch = 3
+};
+
 struct Chat {
   std::string content; // <ID>: user's sentence
   long timestamp;
@@ -32,7 +51,6 @@ class Interface {
   Interface();
   ~Interface();
 
- protected:
   bool run_program_;
 
   enum KeyTable {
@@ -56,13 +74,7 @@ class Interface {
   void PrintToSystemWindow(const std::string &s);
   void ReadInput();
 
-  // Menu for options for either chat, upload file, download file or search file
-  enum Mode {
-    kChat = 0, 
-    kUpload = 1, 
-    kDownload = 2, 
-    kSearch = 3
-  };
+
   int current_mode_;
 
   const std::vector<std::string> kModeString = {
@@ -70,17 +82,6 @@ class Interface {
   };
 
   std::mutex local_inputs_mutex_;
-
-  struct Input {
-    int mode;
-    std::string sentence;
-    long timestamp;
-
-    Input(int m, const std::string &s, const time_t &t):
-      mode(m), sentence(s), timestamp(t) {
-
-    }
-  };
   std::queue<Input> local_inputs_;
 
  private:

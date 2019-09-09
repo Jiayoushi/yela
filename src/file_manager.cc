@@ -11,6 +11,18 @@ FileManager::FileManager():
 
 }
 
+void FileManager::Search(const std::string &filename) {
+
+}
+
+void FileManager::HandleReply(const Message &msg) {
+
+}
+
+void FileManager::Download(const std::string &filename) {
+  
+}
+
 int FileManager::Upload(const std::string &filename) {
   files_.push_back(FileInfo());
 
