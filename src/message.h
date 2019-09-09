@@ -16,25 +16,40 @@ typedef int SequenceNumber;
 typedef std::unordered_map<Id, SequenceNumber> SequenceNumberTable;
 
 const std::vector<std::string> kTypes = {
-  "Rumor", "Status", "BlockRequest", "BlockReply"
+  "Rumor", 
+  "Status", 
+  "BlockRequest", 
+  "BlockReply",
+  "SearchRequest",
+  "SearchReply"
 };
 enum kTypeKeys {
-  kRumor = 0, kStatus, kBlockRequest, kBlockReply
+  kRumor          = 0, 
+  kStatus         = 1,
+  kBlockRequest   = 2, 
+  kBlockReply     = 3,
+  kSearchRequest  = 4,
+  kSearchReply    = 5
 };
 
-// [Access Key]
-// 
-// For basic message:
-//  type
+// Attributes for different messages
+//
+// Common to all
 //  id
-//  seqnum
+//  type
+// Status
 //  data
 //  seqtable
+// Rumor
+//  seqnum
 //  timestamp
-//
-// For files sharing:
-//  dest
-//  sha1
+// SearchRequest
+//  id
+//  search
+//  budget
+// SearchReply
+// BlockRequest
+// BlockReply
 class Message {
  public:
   const static size_t kMaxMessageSize = 1024;

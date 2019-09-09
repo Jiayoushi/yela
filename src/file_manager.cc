@@ -6,21 +6,54 @@
 
 namespace yela {
 
-FileManager::FileManager():
-  kBlockSize(8192) {
+FileManager::FileManager(std::shared_ptr<Network> network):
+  network_(network),
+  sending_(true),
+  sending_thread_(&FileManager::Sending, this) {
 
+}
+
+FileManager::~FileManager() {
+  sending_ = false;
+  sending_thread_.join();
+}
+
+void FileManager::Sending() {
+  while (sending_) {
+    std::vector<std::list<Task>::iterator> to_delete;
+    for (auto p = tasks_.begin(); p != tasks_.end(); ++p) {
+      if (p->msg["type"] == kTypes[kSearchRequest]) {
+        p->budget -= kBudgetPerMessage;
+        if (p->budget == 0) {
+          to_delete.push_back(p);
+        }
+      } else {
+        to_delete.push_back(p);
+      }
+
+      network_->SendMessageToRandomPeer(p->msg);
+    }
+
+    for (auto p: to_delete) {
+      tasks_.erase(p);
+    }
+  }
 }
 
 void FileManager::Search(const std::string &filename) {
+  Message msg;
 
-}
+  msg["id"] = network_->GetId();
+  msg["type"] = kTypes[kSearchRequest];
+  msg["search"] = filename;
+  msg["budget"] = kBudgetPerMessage;
 
-void FileManager::HandleReply(const Message &msg) {
-
+  Task task(msg, kTotalBudgetPerFile);
+  tasks_.push_back(task);
 }
 
 void FileManager::Download(const std::string &filename) {
-  
+
 }
 
 int FileManager::Upload(const std::string &filename) {
@@ -96,6 +129,22 @@ void FileManager::GetSha1(const void *content, size_t size,
     Log("Upload file failed: SHA1_Final failed");
     return;
   } 
+}
+
+void FileManager::HandleBlockRequest(const Message &msg) {
+  
+}
+
+void FileManager::HandleBlockReply(const Message &msg) {
+
+}
+
+void FileManager::HandleSearchRequest(const Message &msg) {
+
+}
+
+void FileManager::HandleSearchReply(const Message &msg) {
+
 }
 
 }

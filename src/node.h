@@ -57,6 +57,7 @@ class Node {
   // Components
   Interface interface_;
   Network network_;
+  FileManager file_manager_;
 
   // Information about this node
   Id id_;
@@ -80,16 +81,10 @@ class Node {
   void AcknowledgeMessage(const Id &origin);
   void ProcessRumorMessage(const Message &msg);
   void HandleStatusMessage(const Message &msg);
-  bool HandleRumorMessage(const Message &msg);
+  void HandleRumorMessage(const Message &msg, sockaddr_in &peer_addr);
   void HandleMessageFromPeer();
   void HandleLocalHostInput();
   
   void FileUploadPostAction(int status, const std::string &filename);
-
-  FileManager file_manager_;
 };
-
-
-
-
 }

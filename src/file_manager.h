@@ -5,7 +5,10 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <list>
+#include <thread>
 
+#include "network.h"
 #include "message.h"
 #include "log.h"
 
@@ -30,18 +33,43 @@ struct FileInfo {
 
 class FileManager {
  public:
-  FileManager();
+  FileManager(std::shared_ptr<Network> network);
+  ~FileManager();
 
-  void Search(const std::string &filename);
-  void HandleReply(const Message &msg);
+  // Requests from local user
   void Download(const std::string &filename);
-  int Upload(const std::string &filename); 
+  void Search(const std::string &filename);
+  int Upload(const std::string &filename);
+
+  // Handle requests from remote user
+  void HandleBlockRequest(const Message &msg);
+  void HandleBlockReply(const Message &msg);
+  void HandleSearchRequest(const Message &msg);
+  void HandleSearchReply(const Message &msg);
  private:
+  const int kTotalBudgetPerFile = 100;
+  const int kBudgetPerMessage = 2;
+  const int kBlockSize = 8192;
+
   void GetSha1(const void *content, size_t size, unsigned char *md);
   std::string Sha1ToString(const ustring &sha1);
+  
+  // All messages that needs to be sent
+  struct Task {
+    Message msg;
+    int budget;
 
-  const int kBlockSize;
+    Task(const Message &m, int b):
+      msg(m), budget(b) {}
+  };
+  std::list<Task> tasks_;
+  // A thread that sends messages
+  bool sending_;
+  void Sending();
+  std::thread sending_thread_;
+
   std::vector<FileInfo> files_;
+  std::shared_ptr<Network> network_;
 };
 
 }

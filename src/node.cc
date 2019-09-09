@@ -22,9 +22,9 @@ namespace yela {
 Node::Node(const std::string &settings_file):
   network_(settings_file),
   interface_(),
+  file_manager_(std::make_shared<Network>(network_)),
+  id_(network_.GetId()),
   send_table_thread(&Node::SendTableToRandomPeer, this) {
-
-  id_ = network_.GetId();
 
   // Initialize logger
   InitLog(id_);
@@ -96,16 +96,23 @@ void Node::HandleMessageFromPeer() {
     network_.InsertPeer(msg["id"], peer_addr);
   }
 
+  // TODO: msg type should be converted to integer
+  //  and it's better to use switch
   // Handle message 
   if (msg["type"] == kTypes[kRumor]) {
-    bool new_seq_num = HandleRumorMessage(msg);
-    
-    // Update destination-sequenced distance vector
-    if (new_seq_num) {
-      network_.UpdateDistanceVector(msg["id"], peer_addr);
-    }
-  } else {
+    HandleRumorMessage(msg, peer_addr);
+  } else if (msg["type"] == kTypes[kStatus]) {
     HandleStatusMessage(msg);
+  } else if (msg["type"] == kTypes[kBlockRequest]) {
+    file_manager_.HandleBlockRequest(msg);
+  } else if (msg["type"] == kTypes[kBlockReply]) {
+    file_manager_.HandleBlockReply(msg);
+  } else if (msg["type"] == kTypes[kSearchRequest]) {
+    file_manager_.HandleSearchRequest(msg);
+  } else if (msg["type"] == kTypes[kSearchReply]) {
+    file_manager_.HandleSearchReply(msg);
+  } else {
+    Log("Unmatched file type " + msg["type"]);
   }
 }
 
@@ -149,15 +156,16 @@ void Node::HandleStatusMessage(const Message &msg) {
 void Node::AcknowledgeMessage(const Id &id) {
   Message status_message(id_, seq_num_table_);
 
-  // TODO: Need to send to the sender
+  // TODO: Need to send to the sender as the ACK instead of a random neighbor
   network_.SendMessageToRandomPeer(status_message);
 }
 
-bool Node::HandleRumorMessage(const Message &msg) {
+// Handle rumor message that is from remote nodes
+void Node::HandleRumorMessage(const Message &msg, sockaddr_in &peer_addr) {
   bool new_seq_num = false;
 
   if (msg["id"] == id_) {
-    return new_seq_num;
+    return;
   }
 
   // If a new id comes, the default sequence number for that id should be set
@@ -169,18 +177,21 @@ bool Node::HandleRumorMessage(const Message &msg) {
   int msg_seq_num = std::stoi(msg["seqnum"]);
   // A message already received, discard
   if (msg_seq_num < last_sequence_number) {
-    return new_seq_num;
-
+    return ;
   // The expected message sequence number
   } else if (msg_seq_num == last_sequence_number) {
     ProcessRumorMessage(msg);
     new_seq_num = true;
   // Waiting for message with seq#1, instead seq#2 is received. Discard it.
+  // TODO: Maybe we should cache it?
   } else {
     // Discard
   }
 
-  return new_seq_num;
+  // Update destination-sequenced distance vector
+  if (new_seq_num) {
+    network_.UpdateDistanceVector(msg["id"], peer_addr);
+  }
 }
 
 void Node::ProcessRumorMessage(const Message &msg) {
@@ -222,9 +233,8 @@ void Node::HandleLocalHostInput() {
       int status = file_manager_.Upload(input.content);
       FileUploadPostAction(status, input.content);
     } else if (input.mode == kDownload) {
-      file_manager_.Download(input.content);      
+      file_manager_.Download(input.content);
     } else if (input.mode == kSearch) {
-      // TODO:
       file_manager_.Search(input.content);
     } else {
       Log("WARNING: current input mode " + std::to_string(input.mode) + 

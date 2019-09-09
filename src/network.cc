@@ -135,12 +135,13 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
     exit(EXIT_FAILURE);
   }
 
+  // TODO: put this log function into log class
   // Log
   if (msg["type"] == kTypes[kRumor]) {
     Log("Send rumor to " + target.id +  
         " (" + target.ip + "," + std::to_string(target.port) + ") " +
         " \"" + msg["data"] + "\"");
-  } else {
+  } else if (msg["type"] == kTypes[kStatus]) {
     std::string log_msg = "Send table to " + target.id + 
       " (" + target.ip + "," + std::to_string(target.port) + ") " + 
       " [";
@@ -150,6 +151,8 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
     }
     log_msg += "]";
     Log(log_msg);
+  } else {
+
   }
 }
 
