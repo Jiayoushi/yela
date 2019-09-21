@@ -10,8 +10,8 @@
 
 namespace yela {
 
-Interface::Interface():
-  run_program_(true), current_mode_(kChat) {
+Interface::Interface(bool &run_program):
+  current_mode_(kChat), run_program_(run_program) {
 
   // Initialize memory for display
   initscr();
@@ -63,7 +63,6 @@ Interface::Interface():
   wrefresh(textbox_window_);
   wrefresh(mode_window_);
 
-
   input_thread_ = std::thread(&Interface::ReadInput, this);
   print_thread_ = std::thread(&Interface::PrintDialogue, this);
 }
@@ -73,6 +72,8 @@ Interface::~Interface() {
   print_thread_.join();
   if (endwin() == ERR) {
     Log("ERROR: Failed to endwin");
+  } else {
+    Log("GUI successfully terminated");
   }
 }
 

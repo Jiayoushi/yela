@@ -55,9 +55,11 @@ class Node {
   void Run();
  private:
   // Components
-  Interface interface_;
+  Interface *interface_;
   Network network_;
   FileManager file_manager_;
+
+  bool run_program_;
 
   // Information about this node
   Id id_;

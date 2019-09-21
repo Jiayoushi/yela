@@ -20,8 +20,9 @@
 namespace yela {
 
 Node::Node(const std::string &settings_file):
+  run_program_(true),
   network_(settings_file),
-  interface_(),
+  interface_(new Interface(run_program_)),
   file_manager_(std::make_shared<Network>(network_)),
   id_(network_.GetId()),
   send_table_thread(&Node::SendTableToRandomPeer, this) {
@@ -37,7 +38,8 @@ Node::~Node() {
   send_table_thread.join();
   Log(id_ + " successfully terminated.");
   CloseLog();
-  interface_.WriteDialogueToFile(id_);
+  interface_->WriteDialogueToFile(id_);
+  delete interface_;
 }
 
 
@@ -54,7 +56,7 @@ void Node::PollEvents() {
     exit(EXIT_FAILURE);
   } else if (event_count == 0) {
     // Check if there is any local user input
-    if (interface_.local_inputs_.size() > 0) {
+    if (interface_->local_inputs_.size() > 0) {
       HandleLocalHostInput();
     }
   } else {
@@ -69,7 +71,7 @@ void Node::PollEvents() {
 }
 
 void Node::SendTableToRandomPeer() {
-  while (interface_.run_program_) {
+  while (run_program_) {
     Message status_message(id_, seq_num_table_);
     network_.SendMessageToRandomPeer(status_message);
     std::this_thread::sleep_for(std::chrono::milliseconds(kPeriodInMs));
@@ -208,7 +210,7 @@ void Node::ProcessRumorMessage(const Message &msg) {
 
   // Insert into dialogue to be printed
   Chat chat(msg["data"], std::stol(msg["timestamp"]));
-  interface_.InsertToDialogue(msg["id"], msg["data"], std::stol(msg["timestamp"]));
+  interface_->InsertToDialogue(msg["id"], msg["data"], std::stol(msg["timestamp"]));
 
   // Update sequence number table
   ++seq_num_table_[msg["id"]];
@@ -216,13 +218,13 @@ void Node::ProcessRumorMessage(const Message &msg) {
 
 // Read user input and send to random peer
 void Node::HandleLocalHostInput() {
-  interface_.local_inputs_mutex_.lock();
+  interface_->local_inputs_mutex_.lock();
 
-  while (interface_.local_inputs_.size() != 0) {
-    const Input &input = interface_.local_inputs_.front();
+  while (interface_->local_inputs_.size() != 0) {
+    const Input &input = interface_->local_inputs_.front();
 
     if (input.content == kExitMsgForTesting) {
-      interface_.run_program_ = false;
+      run_program_ = false;
       return;
     }
 
@@ -241,22 +243,22 @@ void Node::HandleLocalHostInput() {
       " is not matched to any of the mode");
     }
 
-    interface_.local_inputs_.pop();
+    interface_->local_inputs_.pop();
   }
 
-  interface_.local_inputs_mutex_.unlock();
+  interface_->local_inputs_mutex_.unlock();
 }
 
 void Node::FileUploadPostAction(int status, const std::string &filename) {
   if (status == 0) {
-    interface_.PrintToSystemWindow("File '" + filename + "' has been successfully uploaded.");
+    interface_->PrintToSystemWindow("File '" + filename + "' has been successfully uploaded.");
   } else if (status == -1) {
-    interface_.PrintToSystemWindow("File '" + filename + "' is not found.");
+    interface_->PrintToSystemWindow("File '" + filename + "' is not found.");
   }
 }
 
 void Node::Run() {
-  while (interface_.run_program_) {
+  while (run_program_) {
     PollEvents();
   }
 }

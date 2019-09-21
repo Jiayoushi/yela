@@ -48,10 +48,11 @@ struct Chat {
 
 class Interface {
  public:
-  Interface();
+  Interface(bool &run_program);
   ~Interface();
 
-  bool run_program_;
+  volatile bool local_exit_;
+  bool &run_program_;
 
   enum KeyTable {
     kEnter = 10,

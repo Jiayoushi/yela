@@ -3,40 +3,55 @@
 #include <iomanip>
 #include <sstream>
 #include <openssl/sha.h>
+#include <chrono>
 
 namespace yela {
 
 FileManager::FileManager(std::shared_ptr<Network> network):
   network_(network),
-  sending_(true),
-  sending_thread_(&FileManager::Sending, this) {
+  sending_(true) {
+  //sending_thread_(&FileManager::Sending, this) {
 
 }
 
 FileManager::~FileManager() {
   sending_ = false;
-  sending_thread_.join();
+  //sending_thread_.join();
 }
 
 void FileManager::Sending() {
   while (sending_) {
+    // unique_lock allows itself to be released by the
+    // conditional variable if the predicate is not satisfied.
+    std::unique_lock<std::mutex> lk(tasks_mutex_);
+    tasks_cond_.wait(lk, [this](){return !tasks_.empty();});
+    
     std::vector<std::list<Task>::iterator> to_delete;
-    for (auto p = tasks_.begin(); p != tasks_.end(); ++p) {
-      if (p->msg["type"] == kTypes[kSearchRequest]) {
-        p->budget -= kBudgetPerMessage;
-        if (p->budget == 0) {
+    // Periodically send messages until there are no messages left
+    while (!tasks_.empty()) {
+      for (auto p = tasks_.begin(); p != tasks_.end(); ++p) {
+        if (p->msg["type"] == kTypes[kSearchRequest]) {
+          p->budget -= kBudgetPerMessage;
+          if (p->budget == 0) {
+            to_delete.push_back(p);
+          }
+        } else {
           to_delete.push_back(p);
         }
-      } else {
-        to_delete.push_back(p);
+
+        network_->SendMessageToRandomPeer(p->msg);
       }
 
-      network_->SendMessageToRandomPeer(p->msg);
+      lk.unlock();
+      std::this_thread::sleep_for(std::chrono::milliseconds(kMessageSendingGapInMs));
+      lk.lock();
     }
 
     for (auto p: to_delete) {
       tasks_.erase(p);
     }
+
+    lk.unlock();
   }
 }
 
@@ -49,7 +64,9 @@ void FileManager::Search(const std::string &filename) {
   msg["budget"] = kBudgetPerMessage;
 
   Task task(msg, kTotalBudgetPerFile);
+  std::lock_guard<std::mutex> lk(tasks_mutex_);
   tasks_.push_back(task);
+  tasks_cond_.notify_one();
 }
 
 void FileManager::Download(const std::string &filename) {

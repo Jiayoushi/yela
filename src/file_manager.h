@@ -7,6 +7,7 @@
 #include <fstream>
 #include <list>
 #include <thread>
+#include <condition_variable>
 
 #include "network.h"
 #include "message.h"
@@ -63,6 +64,10 @@ class FileManager {
       msg(m), budget(b) {}
   };
   std::list<Task> tasks_;
+  std::mutex tasks_mutex_;
+  std::condition_variable tasks_cond_;
+  const int kMessageSendingGapInMs = 1000;
+
   // A thread that sends messages
   bool sending_;
   void Sending();

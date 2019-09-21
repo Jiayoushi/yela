@@ -1,13 +1,14 @@
 1. Test scripts need to fixed. Not properly exiting
-2. Currently, A->B, B->A, C->A, D->C.
-   D learns everything from C. The messages D has received from C include id of A and B, which D assumes the ip address is C's ip address.
-   A and B knows D only through C's ip address. So when C dies, D is isolated, its message only goes to C(dead), A and B's message only goes to C(dead).
 3. After sent a copy of the rumor message to some other random node, this node should expect a status message to ack it. What if timeout occurs? Do you resend it?
    Outlined in lab1 rumormongering section.
 4. Private message
 5. HopLimit in DSDV
 6. >>> it is better to change periodic checking to event trigger style.
-7. private message between two nodes.
-8. >>> BETTER way to serialize the message, so that is does not have that many of data types? How does QT handle this?
-9. UTC time as the ordering mechanism
 10. Block request/reply.
+11. Get rid of UTC time ordering.
+12. Write tasks into a thread-safe linkedlist?
+13. Implement a thread pool for message sending?
+14. keep implementing download search and upload...
+15. ******* how to properly destroy all components? *******
+    1. file manager needs to be notified when the program ends, otherwise it will keep running and waiting to be joined.
+    2. Add a final termination debug message in the main()
