@@ -17,42 +17,49 @@
 #include <fstream>
 #include <iostream>
 
+#include "global.h"
+
 namespace yela {
 
-Node::Node(const std::string &settings_file):
-  run_program_(true),
-  network_(settings_file),
-  interface_(new Interface(run_program_)),
-  file_manager_(std::make_shared<Network>(network_)),
-  id_(network_.GetId()),
-  send_table_thread(&Node::SendTableToRandomPeer, this) {
-
-  // Initialize logger
-  InitLog(id_);
-
-  // Every node keeps its own sequence number.
-  seq_num_table_[id_] = kInitialSequenceNumber;
+Node::Node():
+  running(false) {
+  Log("Node component initialized.");
 }
 
 Node::~Node() {
-  send_table_thread.join();
-  Log(id_ + " successfully terminated.");
+  Log("Node component destroyed.");
+  // TODO: other processes should handle this.
+  // CloseLop should be handled by a Logger class
+  // dialogue should handled by interface itself.
   CloseLog();
-  interface_->WriteDialogueToFile(id_);
-  delete interface_;
+  interface_->WriteDialogueToFile(network_->GetId());
 }
 
+void Node::RegisterNetwork(std::shared_ptr<Network> network) {
+  network_ = network;
+
+  // Every node keeps its own sequence number.
+  seq_num_table_[network_->GetId()] = kInitialSequenceNumber;
+}
+
+void Node::RegisterInterface(std::shared_ptr<Interface> interface) {
+  interface_ = interface;
+}
+
+void Node::RegisterFileManager(std::shared_ptr<FileManager> file_manager) {
+  file_manager_ = file_manager;
+}
 
 // TODO: network module should handle this
 void Node::PollEvents() {
-  int event_count = epoll_wait(network_.epoll_fd_, network_.events_, 
-                               network_.kMaxEventsNum, network_.kEpollFrequencyInMs);
+  int event_count = epoll_wait(network_->epoll_fd_, network_->events_, 
+                              network_->kMaxEventsNum, network_->kEpollFrequencyInMs);
   if (event_count < 0) {
     if (errno == EINTR) {
       return;
     }
 
-    perror("Error: epoll_wait failed");                                               
+    Log("Error: epoll_wait failed");                                               
     exit(EXIT_FAILURE);
   } else if (event_count == 0) {
     // Check if there is any local user input
@@ -61,7 +68,7 @@ void Node::PollEvents() {
     }
   } else {
     for (int i = 0; i < event_count; ++i) {
-      if (network_.events_[i].data.fd == network_.listen_fd_) {
+      if (network_->events_[i].data.fd == network_->listen_fd_) {
         HandleMessageFromPeer();
       } else {
         std::cerr << "Unmatched file descriptor" << std::endl;
@@ -71,9 +78,9 @@ void Node::PollEvents() {
 }
 
 void Node::SendTableToRandomPeer() {
-  while (run_program_) {
-    Message status_message(id_, seq_num_table_);
-    network_.SendMessageToRandomPeer(status_message);
+  while (running) {
+    Message status_message(network_->GetId(), seq_num_table_);
+    network_->SendMessageToRandomPeer(status_message);
     std::this_thread::sleep_for(std::chrono::milliseconds(kPeriodInMs));
   }
 }
@@ -83,19 +90,19 @@ void Node::HandleMessageFromPeer() {
   socklen_t addrlen = sizeof(peer_addr);
   
   char buf[Message::kMaxMessageSize + 1];
-  int len = recvfrom(network_.listen_fd_, buf, Message::kMaxMessageSize, 0,
+  int len = recvfrom(network_->listen_fd_, buf, Message::kMaxMessageSize, 0,
               (struct sockaddr *)&peer_addr, &addrlen);
   if (len < 0) {
     perror("recvfrom failed");
     return;
   }
 
-  Message msg = network_.ParseMessage(buf, len);
+  Message msg = network_->ParseMessage(buf, len);
 
   // Check if it is a new node first
   // If it is a new peer, parse its chat text in the form of IP:PORT, or HOSTNAME:PORT
-  if (!network_.IsKnownPeer(msg["id"])) {
-    network_.InsertPeer(msg["id"], peer_addr);
+  if (!network_->IsKnownPeer(msg["id"])) {
+    network_->InsertPeer(msg["id"], peer_addr);
   }
 
   // TODO: msg type should be converted to integer
@@ -106,13 +113,13 @@ void Node::HandleMessageFromPeer() {
   } else if (msg["type"] == kTypes[kStatus]) {
     HandleStatusMessage(msg);
   } else if (msg["type"] == kTypes[kBlockRequest]) {
-    file_manager_.HandleBlockRequest(msg);
+    file_manager_->HandleBlockRequest(msg);
   } else if (msg["type"] == kTypes[kBlockReply]) {
-    file_manager_.HandleBlockReply(msg);
+    file_manager_->HandleBlockReply(msg);
   } else if (msg["type"] == kTypes[kSearchRequest]) {
-    file_manager_.HandleSearchRequest(msg);
+    file_manager_->HandleSearchRequest(msg);
   } else if (msg["type"] == kTypes[kSearchReply]) {
-    file_manager_.HandleSearchReply(msg);
+    file_manager_->HandleSearchReply(msg);
   } else {
     Log("Unmatched file type " + msg["type"]);
   }
@@ -138,7 +145,7 @@ void Node::HandleStatusMessage(const Message &msg) {
 
     if (seq_num_table_[id] > seq_num) {
       const Chat chat = text_storage_.Get(id, seq_num);
-      network_.SendMessageToRandomPeer(Message(id, seq_num, chat.content, chat.timestamp));
+      network_->SendMessageToRandomPeer(Message(id, seq_num, chat.content, chat.timestamp));
     } else if (seq_num_table_[id] < seq_num) {
       Log("wants to have seq_num: " + std::to_string(seq_num_table_[id]) + 
           " from " + id);
@@ -149,24 +156,24 @@ void Node::HandleStatusMessage(const Message &msg) {
   // This node has found message it has not received, send status message
   // letting others know this node want unrecieved messages.
   if (send_status_message) {
-    network_.SendMessageToRandomPeer(Message(id_, seq_num_table_));
+    network_->SendMessageToRandomPeer(Message(network_->GetId(), seq_num_table_));
   }
 }
 
 // Since it's UDP, we need to resend messages if datagrams are dropped
 // The ack message is a status message 
 void Node::AcknowledgeMessage(const Id &id) {
-  Message status_message(id_, seq_num_table_);
+  Message status_message(network_->GetId(), seq_num_table_);
 
   // TODO: Need to send to the sender as the ACK instead of a random neighbor
-  network_.SendMessageToRandomPeer(status_message);
+  network_->SendMessageToRandomPeer(status_message);
 }
 
 // Handle rumor message that is from remote nodes
 void Node::HandleRumorMessage(const Message &msg, sockaddr_in &peer_addr) {
   bool new_seq_num = false;
 
-  if (msg["id"] == id_) {
+  if (msg["id"] == network_->GetId()) {
     return;
   }
 
@@ -192,7 +199,7 @@ void Node::HandleRumorMessage(const Message &msg, sockaddr_in &peer_addr) {
 
   // Update destination-sequenced distance vector
   if (new_seq_num) {
-    network_.UpdateDistanceVector(msg["id"], peer_addr);
+    network_->UpdateDistanceVector(msg["id"], peer_addr);
   }
 }
 
@@ -206,7 +213,7 @@ void Node::ProcessRumorMessage(const Message &msg) {
                     std::stol(msg["timestamp"]));
 
   // Send to random neighbor
-  network_.SendMessageToRandomPeer(msg);
+  network_->SendMessageToRandomPeer(msg);
 
   // Insert into dialogue to be printed
   Chat chat(msg["data"], std::stol(msg["timestamp"]));
@@ -223,21 +230,16 @@ void Node::HandleLocalHostInput() {
   while (interface_->local_inputs_.size() != 0) {
     const Input &input = interface_->local_inputs_.front();
 
-    if (input.content == kExitMsgForTesting) {
-      run_program_ = false;
-      return;
-    }
-
     if (input.mode == kChat) {
-      Message msg(id_, seq_num_table_[id_], input.content, input.timestamp);
+      Message msg(network_->GetId(), seq_num_table_[network_->GetId()], input.content, input.timestamp);
       ProcessRumorMessage(msg);
     } else if (input.mode == kUpload) {
-      int status = file_manager_.Upload(input.content);
+      int status = file_manager_->Upload(input.content);
       FileUploadPostAction(status, input.content);
     } else if (input.mode == kDownload) {
-      file_manager_.Download(input.content);
+      file_manager_->Download(input.content);
     } else if (input.mode == kSearch) {
-      file_manager_.Search(input.content);
+      file_manager_->Search(input.content);
     } else {
       Log("WARNING: current input mode " + std::to_string(input.mode) + 
       " is not matched to any of the mode");
@@ -249,6 +251,8 @@ void Node::HandleLocalHostInput() {
   interface_->local_inputs_mutex_.unlock();
 }
 
+
+// TODO: actually this should be handled by file manager
 void Node::FileUploadPostAction(int status, const std::string &filename) {
   if (status == 0) {
     interface_->PrintToSystemWindow("File '" + filename + "' has been successfully uploaded.");
@@ -258,9 +262,13 @@ void Node::FileUploadPostAction(int status, const std::string &filename) {
 }
 
 void Node::Run() {
-  while (run_program_) {
+  std::thread send_table_thread(&Node::SendTableToRandomPeer, this);
+
+  while (true) {
     PollEvents();
   }
+
+  send_table_thread.join();
 }
 
 }

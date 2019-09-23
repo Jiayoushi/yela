@@ -6,12 +6,14 @@
 #include <iostream>
 #include <ctime>
 
+#include "global.h"
 #include "log.h"
 
 namespace yela {
 
-Interface::Interface(bool &run_program):
-  current_mode_(kChat), run_program_(run_program) {
+Interface::Interface():
+  current_mode_(kChat),
+  running(true) {
 
   // Initialize memory for display
   initscr();
@@ -63,13 +65,10 @@ Interface::Interface(bool &run_program):
   wrefresh(textbox_window_);
   wrefresh(mode_window_);
 
-  input_thread_ = std::thread(&Interface::ReadInput, this);
-  print_thread_ = std::thread(&Interface::PrintDialogue, this);
+  Log("Interface component initialized");
 }
 
 Interface::~Interface() {
-  input_thread_.join();
-  print_thread_.join();
   if (endwin() == ERR) {
     Log("ERROR: Failed to endwin");
   } else {
@@ -81,7 +80,8 @@ Interface::~Interface() {
 // This is another thread
 void Interface::ReadInput() {
   std::string content;
-  while (run_program_) {
+
+  while (running) {
     // Update mode menu if there is any change
     current_mode_ = std::max(0, current_mode_);
     current_mode_ = std::min((int)kModeString.size() - 1, current_mode_);
@@ -103,7 +103,7 @@ void Interface::ReadInput() {
     } else if (c == kLeft || c == kRight) {
       // Do nothing
     } else if (c == kControlD) {
-      run_program_ = false;
+      running = false;
     } else if (c == kEnter) {
       if (content.size() == 0) {
         continue;
@@ -143,7 +143,7 @@ void Interface::ReadInput() {
 }
 
 void Interface::PrintDialogue() {
-  while (run_program_) {
+  while (running) {
     std::this_thread::sleep_for(std::chrono::milliseconds(kPrintFrequencyInMs));
    
     // Print the latest limited number of messages
@@ -203,6 +203,14 @@ void Interface::PrintToSystemWindow(const std::string &s) {
     wrefresh(system_window_);
     ++y_pos;
   }
+}
+
+void Interface::Run() {
+  input_thread_ = std::thread(&Interface::ReadInput, this);
+  print_thread_ = std::thread(&Interface::PrintDialogue, this);
+
+  input_thread_.join();
+  print_thread_.join();
 }
 
 }

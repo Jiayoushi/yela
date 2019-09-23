@@ -65,6 +65,9 @@ std::string Message::SeqTableToString(const SequenceNumberTable &table) {
   // TODO: it is better to let cereal handle the serialization
   std::string serialized;
   for (auto p = table.begin(); p != table.end(); ++p) {
+    if (p->first.size() == 0) {
+      Log("ERROR: sequence number table entry is not correct: id is not set");
+    }
     // WARNING: if id contains ':', this code will be wrong
     serialized += p->first + ":" + std::to_string(p->second) + " ";
   }

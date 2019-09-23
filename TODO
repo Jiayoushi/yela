@@ -12,3 +12,7 @@
 15. ******* how to properly destroy all components? *******
     1. file manager needs to be notified when the program ends, otherwise it will keep running and waiting to be joined.
     2. Add a final termination debug message in the main()
+16. Better registering method??
+17. Maybe have a class as the Center class, 
+     it has a interace, network, ..
+     and change Class node into Class gossip

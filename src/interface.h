@@ -48,11 +48,8 @@ struct Chat {
 
 class Interface {
  public:
-  Interface(bool &run_program);
+  Interface();
   ~Interface();
-
-  volatile bool local_exit_;
-  bool &run_program_;
 
   enum KeyTable {
     kEnter = 10,
@@ -75,8 +72,10 @@ class Interface {
   void PrintToSystemWindow(const std::string &s);
   void ReadInput();
 
-
+  bool running;
   int current_mode_;
+
+  void Run();
 
   const std::vector<std::string> kModeString = {
     "Chat", "Upload", "Download", "Search"

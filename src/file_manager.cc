@@ -5,22 +5,24 @@
 #include <openssl/sha.h>
 #include <chrono>
 
+#include "global.h"
+
 namespace yela {
 
-FileManager::FileManager(std::shared_ptr<Network> network):
-  network_(network),
-  sending_(true) {
-  //sending_thread_(&FileManager::Sending, this) {
-
+FileManager::FileManager() {
+  Log("File Manager component initialized.");
 }
 
 FileManager::~FileManager() {
-  sending_ = false;
-  //sending_thread_.join();
+
 }
 
-void FileManager::Sending() {
-  while (sending_) {
+void FileManager::RegisterNetwork(std::shared_ptr<Network> network) {
+  network_ = network;
+}
+
+void FileManager::Run() {
+  while (true) {
     // unique_lock allows itself to be released by the
     // conditional variable if the predicate is not satisfied.
     std::unique_lock<std::mutex> lk(tasks_mutex_);

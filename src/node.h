@@ -8,7 +8,6 @@
 #include "file_manager.h"
 #include "network.h"
 #include "interface.h"
-#include "log.h"
 
 namespace yela {
 
@@ -49,29 +48,30 @@ class TextStorage {
 
 class Node {
  public:
-  Node(const std::string &settings_file);
+  Node();
   ~Node();
+
+  void RegisterNetwork(std::shared_ptr<Network> network);
+  void RegisterInterface(std::shared_ptr<Interface> interface);
+  void RegisterFileManager(std::shared_ptr<FileManager> file_manager);
 
   void Run();
  private:
   // Components
-  Interface *interface_;
-  Network network_;
-  FileManager file_manager_;
-
-  bool run_program_;
+  std::shared_ptr<Interface> interface_;
+  std::shared_ptr<Network> network_;
+  std::shared_ptr<FileManager> file_manager_;
 
   // Information about this node
   Id id_;
 
-  const std::string kExitMsgForTesting = "nSQ5oCay0gG6qNJURWxZ";
   void PollEvents();
 
   // Anti-entropy
   // Periodic send message
   const int kPeriodInMs = 1000;
-  std::thread send_table_thread; 
   void SendTableToRandomPeer();
+  bool running;
 
   // Sequence table
   const int kInitialSequenceNumber = 1;
