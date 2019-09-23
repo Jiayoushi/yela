@@ -8,6 +8,7 @@
 #include "file_manager.h"
 #include "network.h"
 #include "interface.h"
+#include "base/stoppable.h"
 
 namespace yela {
 
@@ -46,7 +47,7 @@ class TextStorage {
 
 
 
-class Node {
+class Node: public Stoppable {
  public:
   Node();
   ~Node();

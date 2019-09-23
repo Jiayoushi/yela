@@ -11,6 +11,7 @@
 
 #include "network.h"
 #include "message.h"
+#include "base/stoppable.h"
 
 namespace yela {
 
@@ -31,7 +32,7 @@ struct FileInfo {
   }
 };
 
-class FileManager {
+class FileManager: public Stoppable {
  public:
   FileManager();
   ~FileManager();

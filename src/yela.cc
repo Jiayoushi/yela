@@ -27,9 +27,7 @@ Yela::Yela(const Arguments &arg) {
 }
 
 Yela::~Yela() {
-  //for (int i = 0; i < threads_.size(); ++i) {
-  //  background_threads_[i].join();
-  //}
+
 }
 
 void Yela::RunNetwork() {
@@ -50,12 +48,21 @@ void Yela::RunFileSharing() {
 
 void Yela::Run() {
   // Spawn threads to run node and file sharing
+  background_threads_.push_back(std::thread(&Yela::RunGossip, this));
+  background_threads_.push_back(std::thread(&Yela::RunFileSharing, this));
 
   // The main thread is handling the GUI
-  // As long as the GUI exits, the whole program
-  // should exit
-
+  // Right after the GUI exits, the whole program should exit
   RunInterface();
+
+  // Stop
+  file_manager_->Stop();
+  node_->Stop();
+
+  // Join
+  for (int i = 0; i < background_threads_.size(); ++i) {
+    background_threads_[i].join();
+  }
 }
 
 }

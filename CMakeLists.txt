@@ -17,7 +17,8 @@ add_executable(yela
                src/message.cc
                src/global.cc
                src/yela.cc
-               src/cmd.cc)
+               src/cmd.cc
+               src/base/stoppable.cc)
 target_link_libraries(yela Threads::Threads)
 target_link_libraries(yela ${CURSES_LIBRARIES})
 target_link_libraries(yela crypto)

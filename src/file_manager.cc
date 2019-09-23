@@ -26,7 +26,16 @@ void FileManager::Run() {
     // unique_lock allows itself to be released by the
     // conditional variable if the predicate is not satisfied.
     std::unique_lock<std::mutex> lk(tasks_mutex_);
-    tasks_cond_.wait(lk, [this](){return !tasks_.empty();});
+
+    // TODO: needs a interruptable thread to prevent wasted CPU
+    while (true) {
+      tasks_cond_.wait_for(lk, std::chrono::seconds(1));
+      if (tasks_.size() > 0) {
+        break;
+      } else if (StopRequested()) {
+        return;
+      }
+    }
     
     std::vector<std::list<Task>::iterator> to_delete;
     // Periodically send messages until there are no messages left

@@ -78,7 +78,7 @@ void Node::PollEvents() {
 }
 
 void Node::SendTableToRandomPeer() {
-  while (running) {
+  while (!StopRequested()) {
     Message status_message(network_->GetId(), seq_num_table_);
     network_->SendMessageToRandomPeer(status_message);
     std::this_thread::sleep_for(std::chrono::milliseconds(kPeriodInMs));
@@ -264,7 +264,7 @@ void Node::FileUploadPostAction(int status, const std::string &filename) {
 void Node::Run() {
   std::thread send_table_thread(&Node::SendTableToRandomPeer, this);
 
-  while (true) {
+  while (!StopRequested()) {
     PollEvents();
   }
 
