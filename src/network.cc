@@ -151,8 +151,12 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
     }
     log_msg += "]";
     Log(log_msg);
+  } else if (msg["type"] == kTypes[kBlockRequest]) {
+    std::string log_msg = "Send block request to " + target.id + 
+    " with sha1 " + msg["hash"];
+    Log(log_msg);
   } else {
-
+    
   }
 }
 

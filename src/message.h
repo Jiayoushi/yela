@@ -49,6 +49,11 @@ enum kTypeKeys {
 //  budget
 // SearchReply
 // BlockRequest
+//  id
+//  type
+//  dest
+//  hash
+//  hoplimit
 // BlockReply
 class Message {
  public:

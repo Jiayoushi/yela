@@ -2,6 +2,7 @@
 
 #include <iomanip>
 #include <sstream>
+#include <string>
 #include <openssl/sha.h>
 #include <chrono>
 
@@ -41,6 +42,9 @@ void FileManager::Run() {
     // Periodically send messages until there are no messages left
     while (!tasks_.empty()) {
       for (auto p = tasks_.begin(); p != tasks_.end(); ++p) {
+        if (StopRequested()) {
+          return;
+        }
         if (p->msg["type"] == kTypes[kSearchRequest]) {
           p->budget -= kBudgetPerMessage;
           if (p->budget == 0) {
@@ -53,13 +57,9 @@ void FileManager::Run() {
         network_->SendMessageToRandomPeer(p->msg);
       }
 
-      lk.unlock();
-      std::this_thread::sleep_for(std::chrono::milliseconds(kMessageSendingGapInMs));
-      lk.lock();
-    }
-
-    for (auto p: to_delete) {
-      tasks_.erase(p);
+      for (auto p: to_delete) {
+        tasks_.erase(p);
+      }
     }
 
     lk.unlock();
@@ -75,13 +75,37 @@ void FileManager::Search(const std::string &filename) {
   msg["budget"] = kBudgetPerMessage;
 
   Task task(msg, kTotalBudgetPerFile);
-  std::lock_guard<std::mutex> lk(tasks_mutex_);
-  tasks_.push_back(task);
-  tasks_cond_.notify_one();
+  PushTask(msg);
 }
 
-void FileManager::Download(const std::string &filename) {
+void FileManager::PushTask(const Task &task) {
+  std::lock_guard<std::mutex> lk(tasks_mutex_);
+  tasks_.push_back(task);
+  tasks_cond_.notify_one(); 
+}
 
+void FileManager::Download(const std::string &input) {
+  std::istringstream ss(input);
+  std::string target_node_id;  
+  std::string target_sha1;
+
+  ss >> target_node_id;
+  ss >> target_sha1;
+
+  if (target_node_id.size() == 0) {
+    Log("Error: incomplete input to download a file");
+    return;
+  }
+
+  Message msg;
+  msg["id"] = network_->GetId();
+  msg["type"] = kTypes[kBlockRequest];
+  msg["dest"] = target_node_id;
+  msg["hash"] = target_sha1;
+  msg["hoplimit"] = std::to_string(kDownloadFileHopLimit);
+
+  Task task(msg);
+  PushTask(msg);
 }
 
 int FileManager::Upload(const std::string &filename) {

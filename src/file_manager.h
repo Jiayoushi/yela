@@ -63,16 +63,26 @@ class FileManager: public Stoppable {
   // All messages that needs to be sent
   struct Task {
     Message msg;
-    int budget;
+    int budget; // Only used for file searching
 
+    Task(const Message &m):
+      msg(m), budget(0) {
+
+    }
     Task(const Message &m, int b):
       msg(m), budget(b) {}
   };
+  void PushTask(const Task &msg);
   std::list<Task> tasks_;
   std::mutex tasks_mutex_;
   std::condition_variable tasks_cond_;
   const int kMessageSendingGapInMs = 1000;
 
+
+  // File Downloading
+  const int kDownloadFileHopLimit = 10;
+
+  // Files in memory, TODO: probably a bad idea
   std::vector<FileInfo> files_;
   std::shared_ptr<Network> network_;
 };
