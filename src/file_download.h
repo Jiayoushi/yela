@@ -1,0 +1,30 @@
+#ifndef YELA_FILE_DOWNLOAD_H_
+#define YELA_FILE_DOWNLOAD_H_
+
+#include "global.h"
+#include "base/stoppable.h"
+#include "file_upload.h"
+
+namespace yela {
+
+class DownloadManager: public Stoppable {
+ public:
+  DownloadManager();
+  ~DownloadManager();
+
+  void Run();
+  void Download(const std::string &input);
+  void HandleBlockRequest(const Message &msg);
+  void HandleBlockReply(const Message &msg);
+  void RegisterNetwork(std::shared_ptr<Network> network);
+  void RegisterUploadManager(std::shared_ptr<UploadManager> upload);
+ private:
+  const int kDownloadFileHopLimit = 10;
+
+  std::shared_ptr<Network> network_;
+  std::shared_ptr<UploadManager> upload_manager_;
+};
+
+}
+
+#endif

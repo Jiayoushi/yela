@@ -14,6 +14,9 @@ add_executable(yela
                src/interface.cc
                src/log.cc
                src/file_manager.cc
+               src/file_search.cc
+               src/file_upload.cc
+               src/file_download.cc
                src/message.cc
                src/global.cc
                src/yela.cc

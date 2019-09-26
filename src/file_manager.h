@@ -4,33 +4,15 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <fstream>
-#include <list>
-#include <thread>
-#include <condition_variable>
 
 #include "network.h"
 #include "message.h"
 #include "base/stoppable.h"
+#include "file_search.h"
+#include "file_upload.h"
+#include "file_download.h"
 
 namespace yela {
-
-typedef std::basic_string<unsigned char> ustring;
-
-struct FileInfo {
-  std::string name;
-
-  ustring content_sha1;
-  ustring meta_sha1;
-
-  size_t size;
-  std::vector<std::string> content;
-
-  FileInfo():
-    size(0) {
-
-  }
-};
 
 class FileManager: public Stoppable {
  public:
@@ -41,9 +23,9 @@ class FileManager: public Stoppable {
   void RegisterNetwork(std::shared_ptr<Network> network);
 
   // Requests from local user
-  void Download(const std::string &filename);
-  void Search(const std::string &filename);
-  int Upload(const std::string &filename);
+  int Upload(const std::string &input);
+  void Download(const std::string &input);
+  void Search(const std::string &input);
 
   // Handle requests from remote user
   void HandleBlockRequest(const Message &msg);
@@ -53,37 +35,16 @@ class FileManager: public Stoppable {
 
   void Run();
  private:
-  const int kTotalBudgetPerFile = 100;
-  const int kBudgetPerMessage = 2;
-  const int kBlockSize = 8192;
-
-  void GetSha1(const void *content, size_t size, unsigned char *md);
-  std::string Sha1ToString(const ustring &sha1);
-  
-  // All messages that needs to be sent
-  struct Task {
-    Message msg;
-    int budget; // Only used for file searching
-
-    Task(const Message &m):
-      msg(m), budget(0) {
-
-    }
-    Task(const Message &m, int b):
-      msg(m), budget(b) {}
-  };
-  void PushTask(const Task &msg);
-  std::list<Task> tasks_;
-  std::mutex tasks_mutex_;
-  std::condition_variable tasks_cond_;
-  const int kMessageSendingGapInMs = 1000;
-
+  // File Uploading
+  std::shared_ptr<UploadManager> upload_manager_;
 
   // File Downloading
-  const int kDownloadFileHopLimit = 10;
+  std::shared_ptr<DownloadManager> download_manager_;
 
-  // Files in memory, TODO: probably a bad idea
-  std::vector<FileInfo> files_;
+  // File Searching
+  std::shared_ptr<SearchManager> search_manager_;
+
+  // Other components
   std::shared_ptr<Network> network_;
 };
 
