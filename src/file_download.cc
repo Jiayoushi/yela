@@ -33,6 +33,8 @@ void DownloadManager::Download(const std::string &input) {
   msg["dest"] = target_node_id;                                                       
   msg["hash"] = target_sha1;                                                          
   msg["hoplimit"] = std::to_string(kDownloadFileHopLimit);
+
+  // Just make it as blocking first
 }
 
 void DownloadManager::HandleBlockRequest(const Message &request) {

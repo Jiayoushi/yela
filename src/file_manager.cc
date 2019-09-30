@@ -67,7 +67,7 @@ void FileManager::HandleSearchReply(const Message &msg) {
   search_manager_->HandleSearchReply(msg);
 }
 
-int FileManager::Upload(const std::string &input) {
+std::string FileManager::Upload(const std::string &input) {
   return upload_manager_->Upload(input);
 }
 

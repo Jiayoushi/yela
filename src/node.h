@@ -88,6 +88,6 @@ class Node: public Stoppable {
   void HandleMessageFromPeer();
   void HandleLocalHostInput();
   
-  void FileUploadPostAction(int status, const std::string &filename);
+  void FileUploadPostAction(const std::string &metafile, const std::string &filename);
 };
 }

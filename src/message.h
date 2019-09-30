@@ -58,7 +58,7 @@ enum kTypeKeys {
 class Message {
  public:
   const static size_t kMaxMessageSize = 1024;
-  const std::string kEmptyString = "";
+  const std::string kEmptyString = std::string();
 
   Message();
   Message(const Id &id, const SequenceNumber &seq_num, const std::string &data, 

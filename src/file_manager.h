@@ -23,7 +23,7 @@ class FileManager: public Stoppable {
   void RegisterNetwork(std::shared_ptr<Network> network);
 
   // Requests from local user
-  int Upload(const std::string &input);
+  std::string Upload(const std::string &input);
   void Download(const std::string &input);
   void Search(const std::string &input);
 

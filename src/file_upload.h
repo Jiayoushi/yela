@@ -9,16 +9,16 @@
 
 namespace yela {
 
-typedef std::basic_string<unsigned char> ustring;
-
 struct FileInfo {
   std::string name;
 
-  ustring content_sha1;
-  ustring meta_sha1;
+  // These are sha1 hash in hex format
+  std::string metafile; // concatenated sha1 of the metafile
+  std::string metafile_sha1; // sha1 of the metafile
 
   size_t size;
-  std::vector<std::string> content;
+  // TODO: should not be in the program's memory
+  std::vector<std::string> content; // The file is in multiple blocks
 
   FileInfo():
     size(0) {}
@@ -29,14 +29,15 @@ class UploadManager {
   UploadManager();
   ~UploadManager();
 
-  int Upload(const std::string &input);
-  int SearchFile(ustring meta_hash);
+  // Upload a file and returns the sha1 of the file's metafile
+  std::string Upload(const std::string &input);
+  int SearchFile(std::string meta_hash);
   void RegisterNetwork(std::shared_ptr<Network> network);
  private:
   const int kBlockSize = 8192;
 
   void GetSha1(const void *content, size_t size, unsigned char *md);
-  std::string Sha1ToString(const ustring &sha1);
+  std::string Sha1ToString(const std::basic_string<unsigned char> sha1);
 
   std::vector<FileInfo> files_;
 

@@ -38,7 +38,7 @@ CEREAL_RAPIDJSON_NAMESPACE_BEGIN
     - \c std::istringstream
     - \c std::stringstream
     - \c std::wistringstream
-    - \c std::wstringstream
+    - \c std::sstringstream
     - \c std::ifstream
     - \c std::fstream
     - \c std::wifstream

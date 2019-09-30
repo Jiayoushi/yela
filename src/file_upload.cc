@@ -2,6 +2,8 @@
 
 #include <openssl/sha.h>
 #include <string>
+#include <ios>
+#include <cassert>
 #include <sstream>
 
 namespace yela {
@@ -14,16 +16,19 @@ UploadManager::~UploadManager() {
 
 }
 
-int UploadManager::Upload(const std::string &filename) {
+std::string UploadManager::Upload(const std::string &filename) {
   files_.push_back(FileInfo());
 
   FileInfo &file = files_.back();
   file.name = filename;
 
+  std::basic_string<unsigned char> metafile;
+  std::basic_string<unsigned char> metafile_sha1;
+
   std::ifstream fs(file.name, std::ios_base::binary);
   if (!fs.is_open()) {
     Log("Upload file failed: unable to open file \"" + file.name + "\"");
-    return -1;
+    return std::string();
   }
 
   for (int bytes_read = -1; bytes_read != 0; ) {
@@ -32,9 +37,9 @@ int UploadManager::Upload(const std::string &filename) {
     bytes_read = fs.readsome(buffer, kBlockSize);
 
     if (bytes_read == 0) {
-      GetSha1(file.content_sha1.c_str(), file.content_sha1.size(), md);
+      GetSha1(file.metafile.c_str(), file.metafile.size(), md);
       for (int i = 0; i < SHA_DIGEST_LENGTH; ++i) {
-        file.meta_sha1 += md[i];
+        metafile_sha1 += md[i];
       }
     } else {
       file.size += bytes_read;
@@ -45,25 +50,29 @@ int UploadManager::Upload(const std::string &filename) {
 
       GetSha1(buffer, bytes_read, md);
       for (int i = 0; i < SHA_DIGEST_LENGTH; ++i) {
-        file.content_sha1 += md[i];
+        metafile += md[i];
       }
     }
   }
 
+  // Convert unsigned char to char in hex
+  file.metafile_sha1 = Sha1ToString(metafile_sha1);
+  file.metafile = Sha1ToString(metafile);
+
   Log("Upload file succeed: \"" + file.name + "\"  \n" +
-      "meta sha1: \n" + Sha1ToString(file.meta_sha1) + "\n" +
-      "content sha1: \n" + Sha1ToString(file.content_sha1) + "\n" +
+      "meta sha1: \n" + file.metafile_sha1 + "\n" +
+      "content sha1: \n" + file.metafile + "\n" +
       "file size: \n" + std::to_string(file.size) + "\n");
 
-  return 0;
+  return file.metafile;
 }
 
-std::string UploadManager::Sha1ToString(const ustring &sha1) {
+std::string UploadManager::Sha1ToString(const std::basic_string<unsigned char> sha1) {
   std::stringstream ss;
   ss << std::hex << std::setfill('0');
   for (int i = 0; i < sha1.size() / 20; ++i) {
     for (int j = 0; j < 20; ++j) {
-      ss << std::setw(2) << (int)sha1[i * 20 + j];
+      ss << std::setw(2) << (int)(sha1[i * 20 + j]);
     }
     ss << std::endl;
   }

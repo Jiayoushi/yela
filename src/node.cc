@@ -234,8 +234,8 @@ void Node::HandleLocalHostInput() {
       Message msg(network_->GetId(), seq_num_table_[network_->GetId()], input.content, input.timestamp);
       ProcessRumorMessage(msg);
     } else if (input.mode == kUpload) {
-      int status = file_manager_->Upload(input.content);
-      FileUploadPostAction(status, input.content);
+      std::string metafile_sha1 = file_manager_->Upload(input.content);
+      FileUploadPostAction(metafile_sha1, input.content);
     } else if (input.mode == kDownload) {
       file_manager_->Download(input.content);
     } else if (input.mode == kSearch) {
@@ -253,10 +253,10 @@ void Node::HandleLocalHostInput() {
 
 
 // TODO: actually this should be handled by file manager
-void Node::FileUploadPostAction(int status, const std::string &filename) {
-  if (status == 0) {
-    interface_->PrintToSystemWindow("File '" + filename + "' has been successfully uploaded.");
-  } else if (status == -1) {
+void Node::FileUploadPostAction(const std::string &metafile, const std::string &filename) {
+  if (metafile.size() > 0) {
+    interface_->PrintToSystemWindow(filename + " uploade with sha1:"  + metafile);
+  } else {
     interface_->PrintToSystemWindow("File '" + filename + "' is not found.");
   }
 }
