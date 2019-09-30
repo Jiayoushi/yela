@@ -31,8 +31,10 @@ class UploadManager {
 
   // Upload a file and returns the sha1 of the file's metafile
   std::string Upload(const std::string &input);
-  int SearchFile(std::string meta_hash);
+  int HasFile(const std::string &sha1);
+  const FileInfo &GetFile(unsigned int index);
   void RegisterNetwork(std::shared_ptr<Network> network);
+  bool CheckSha1(const std::string &data, const std::string &target_sha1);
  private:
   const int kBlockSize = 8192;
 

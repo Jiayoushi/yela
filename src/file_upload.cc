@@ -74,9 +74,23 @@ std::string UploadManager::Sha1ToString(const std::basic_string<unsigned char> s
     for (int j = 0; j < 20; ++j) {
       ss << std::setw(2) << (int)(sha1[i * 20 + j]);
     }
-    ss << std::endl;
   }
   return ss.str();
+}
+
+int UploadManager::HasFile(const std::string &sha1) {
+  Log("Files[0] metafile " + files_[0].metafile + ";");
+  for (int i = 0; i < files_.size(); ++i) {
+    if (sha1 == files_[i].metafile) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+const FileInfo &UploadManager::GetFile(unsigned int index) {
+  return files_[index];
 }
 
 void UploadManager::GetSha1(const void *content, size_t size,
@@ -99,6 +113,20 @@ void UploadManager::GetSha1(const void *content, size_t size,
 
 void UploadManager::RegisterNetwork(std::shared_ptr<Network> network) {
   network_ = network;
+}
+
+bool UploadManager::CheckSha1(const std::string &data, const std::string &target_sha1) {
+  unsigned char md[SHA_DIGEST_LENGTH];
+  GetSha1(data.c_str(), data.size(), md); 
+
+  std::basic_string<unsigned char> sha1;
+  for (int i = 0; i < SHA_DIGEST_LENGTH; ++i) {
+    sha1 += md[i];
+  }
+
+  std::string hex_sha1 = Sha1ToString(sha1);
+
+  return hex_sha1 == target_sha1;
 }
 
 }

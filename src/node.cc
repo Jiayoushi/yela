@@ -107,7 +107,8 @@ void Node::HandleMessageFromPeer() {
 
   // TODO: msg type should be converted to integer
   //  and it's better to use switch
-  // Handle message 
+  // TODO: should have file_manager handle different operations related to file managing
+  // Handle message
   if (msg["type"] == kTypes[kRumor]) {
     HandleRumorMessage(msg, peer_addr);
   } else if (msg["type"] == kTypes[kStatus]) {

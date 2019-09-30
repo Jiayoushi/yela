@@ -71,7 +71,6 @@ class Network {
   std::string GetIp(const struct sockaddr_in &addr);
   int GetPort(const struct sockaddr_in &addr);
 
-
   // This node's network id
   NetworkId me_;
 

@@ -19,7 +19,11 @@ class DownloadManager: public Stoppable {
   void RegisterNetwork(std::shared_ptr<Network> network);
   void RegisterUploadManager(std::shared_ptr<UploadManager> upload);
  private:
-  const int kDownloadFileHopLimit = 10;
+  void RelayMessage(const Message &msg);
+  void WriteToFile(const std::string &file_content, const std::string &filename);
+
+  const int kBlockRequestHopLimit = 10;
+  const int kBlockReplyHopLimit = 10;
 
   std::shared_ptr<Network> network_;
   std::shared_ptr<UploadManager> upload_manager_;

@@ -35,10 +35,14 @@ void Log(const std::string &target_ip, const std::string &target_id, const std::
     Log(log_msg);
   } else if (msg["type"] == kTypes[kBlockRequest]) {
     std::string log_msg = "Send block request to " + target_id +
-    " with sha1 " + msg["hash"];
+    " with sha1 " + msg["blockrequest"];
     Log(log_msg);
+  } else if (msg["type"] == kTypes[kBlockReply]) {
+    std::string log_msg = "Send block reply to " + target_id +
+    " with sha1 " + msg["blockreply"];
+    Log(log_msg);  
   } else {
-    // TODO: other type of message not yet implemented
+
   }
 }
 
