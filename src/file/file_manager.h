@@ -5,9 +5,10 @@
 #include <string>
 #include <iostream>
 
-#include "network.h"
-#include "message.h"
-#include "base/stoppable.h"
+#include "../network.h"
+#include "../message.h"
+#include "../base/stoppable.h"
+#include "../interface.h"
 #include "file_search.h"
 #include "file_upload.h"
 #include "file_download.h"
@@ -21,6 +22,7 @@ class FileManager: public Stoppable {
 
   // Register certain components
   void RegisterNetwork(std::shared_ptr<Network> network);
+  void RegisterInterface(std::shared_ptr<Interface> interface);
 
   // Requests from local user
   std::string Upload(const std::string &input);
@@ -46,6 +48,7 @@ class FileManager: public Stoppable {
 
   // Other components
   std::shared_ptr<Network> network_;
+  std::shared_ptr<Interface> interface_;
 };
 
 }

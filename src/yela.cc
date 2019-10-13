@@ -18,6 +18,7 @@ Yela::Yela(const Arguments &arg) {
   // File sharing
   file_manager_ = std::make_shared<FileManager>();
   file_manager_->RegisterNetwork(network_);
+  file_manager_->RegisterInterface(interface_);
 
   // Gossip
   node_ = std::make_shared<Node>();

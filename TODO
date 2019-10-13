@@ -18,3 +18,4 @@
      and change Class node into Class gossip
 18. Avoid work contention in the file manger using (ccia p283)
 19. Interruptible Thread is stil under construction to handle file_manager's wasted CPU
+20. Or use thread pool, since each thread needs to periodically send messages, meaning keep running.

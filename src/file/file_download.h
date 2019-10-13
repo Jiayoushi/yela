@@ -1,8 +1,8 @@
 #ifndef YELA_FILE_DOWNLOAD_H_
 #define YELA_FILE_DOWNLOAD_H_
 
-#include "global.h"
-#include "base/stoppable.h"
+#include "../global.h"
+#include "../base/stoppable.h"
 #include "file_upload.h"
 
 namespace yela {

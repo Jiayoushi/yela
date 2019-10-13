@@ -13,14 +13,14 @@ add_executable(yela
                src/network.cc
                src/interface.cc
                src/log.cc
-               src/file_manager.cc
-               src/file_search.cc
-               src/file_upload.cc
-               src/file_download.cc
                src/message.cc
                src/global.cc
                src/yela.cc
                src/cmd.cc
+               src/file/file_manager.cc
+               src/file/file_search.cc
+               src/file/file_upload.cc
+               src/file/file_download.cc
                src/base/stoppable.cc)
 target_link_libraries(yela Threads::Threads)
 target_link_libraries(yela ${CURSES_LIBRARIES})

@@ -5,7 +5,7 @@
 #include <string>
 #include <chrono>
 
-#include "global.h"
+#include "../global.h"
 
 namespace yela {
 
@@ -35,12 +35,17 @@ void FileManager::Run() {
 }
 
 // TODO: gotta have a better way to handle this
+// TODO: global message queue for network
 void FileManager::RegisterNetwork(std::shared_ptr<Network> network) {
   network_ = network;
   
   upload_manager_->RegisterNetwork(network);
   search_manager_->RegisterNetwork(network);
   download_manager_->RegisterNetwork(network);
+}
+
+void FileManager::RegisterInterface(std::shared_ptr<Interface> interface) {
+  interface_ = interface;
 }
 
 void FileManager::Search(const std::string &input) {
@@ -64,7 +69,10 @@ void FileManager::HandleSearchRequest(const Message &msg) {
 }
 
 void FileManager::HandleSearchReply(const Message &msg) {
-  search_manager_->HandleSearchReply(msg);
+  std::string display_msg = search_manager_->HandleSearchReply(msg);
+  if (!display_msg.empty()) {
+    interface_->PrintToSystemWindow(display_msg);
+  }
 }
 
 std::string FileManager::Upload(const std::string &input) {

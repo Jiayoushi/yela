@@ -115,7 +115,8 @@ void UploadManager::RegisterNetwork(std::shared_ptr<Network> network) {
   network_ = network;
 }
 
-bool UploadManager::CheckSha1(const std::string &data, const std::string &target_sha1) {
+bool UploadManager::CheckSha1(const std::string &data, 
+                              const std::string &target_sha1) {
   unsigned char md[SHA_DIGEST_LENGTH];
   GetSha1(data.c_str(), data.size(), md); 
 
@@ -127,6 +128,31 @@ bool UploadManager::CheckSha1(const std::string &data, const std::string &target
   std::string hex_sha1 = Sha1ToString(sha1);
 
   return hex_sha1 == target_sha1;
+}
+
+std::vector<int> UploadManager::FindFileByKeywords(
+               const std::vector<std::string> &keywords) {
+  std::vector<int> found;
+
+  for (int i = 0; i < files_.size(); ++i) {
+    for (const std::string &keyword: keywords) {
+      if (files_[i].name.find(keyword) != std::string::npos) {
+        found.push_back(i);
+      }
+    }
+  }
+
+  return found;
+}
+
+int UploadManager::FindFileByName(const std::string &filename) {
+  for (int i = 0; i < files_.size(); ++i) {
+    if (files_[i].name == filename) {
+      return i;
+    }
+  }  
+
+  return -1;
 }
 
 }
