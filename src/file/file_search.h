@@ -24,6 +24,7 @@ class SearchManager: public Stoppable {
   //       and all instance just call a global function to push message to
   //       the message queue
   void RegisterNetwork(std::shared_ptr<Network> network);
+  void RegisterUploadManager(std::shared_ptr<UploadManager> upload_manager);
  private:
   const int kDefaultSearchRequestBudget = 2;
   const int kDefaultSearchReplyBudget = 100;

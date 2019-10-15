@@ -25,7 +25,7 @@ class FileManager: public Stoppable {
   void RegisterInterface(std::shared_ptr<Interface> interface);
 
   // Requests from local user
-  std::string Upload(const std::string &input);
+  void Upload(const std::string &input);
   void Download(const std::string &input);
   void Search(const std::string &input);
 

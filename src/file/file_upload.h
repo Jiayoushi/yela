@@ -38,6 +38,8 @@ class UploadManager {
   int FindFileByName(const std::string &filename);
   std::vector<int> FindFileByKeywords(const std::vector<std::string> &keywords);
  private:
+  std::string GetBaseFileName(const std::string &filename);
+
   const int kBlockSize = 8192;
 
   void GetSha1(const void *content, size_t size, unsigned char *md);

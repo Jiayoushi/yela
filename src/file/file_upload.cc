@@ -20,14 +20,14 @@ std::string UploadManager::Upload(const std::string &filename) {
   files_.push_back(FileInfo());
 
   FileInfo &file = files_.back();
-  file.name = filename;
+  file.name = GetBaseFileName(filename);
 
   std::basic_string<unsigned char> metafile;
   std::basic_string<unsigned char> metafile_sha1;
 
-  std::ifstream fs(file.name, std::ios_base::binary);
+  std::ifstream fs(filename, std::ios_base::binary);
   if (!fs.is_open()) {
-    Log("Upload file failed: unable to open file \"" + file.name + "\"");
+    Log("Upload file failed: unable to open file \"" + filename + "\"");
     return std::string();
   }
 
@@ -153,6 +153,15 @@ int UploadManager::FindFileByName(const std::string &filename) {
   }  
 
   return -1;
+}
+
+std::string UploadManager::GetBaseFileName(const std::string &filename) {
+  size_t index = filename.find_last_of("/");
+  if (index == std::string::npos) {
+    return filename;
+  }
+
+  return filename.substr(index + 1);
 }
 
 }

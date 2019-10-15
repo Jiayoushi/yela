@@ -87,7 +87,5 @@ class Node: public Stoppable {
   void HandleRumorMessage(const Message &msg, sockaddr_in &peer_addr);
   void HandleMessageFromPeer();
   void HandleLocalHostInput();
-  
-  void FileUploadPostAction(const std::string &metafile, const std::string &filename);
 };
 }

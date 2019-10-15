@@ -15,6 +15,7 @@ FileManager::FileManager():
   download_manager_(std::make_shared<DownloadManager>()) {
 
   download_manager_->RegisterUploadManager(upload_manager_);
+  search_manager_->RegisterUploadManager(upload_manager_);
 
   Log("File Manager component initialized.");
 }
@@ -75,8 +76,14 @@ void FileManager::HandleSearchReply(const Message &msg) {
   }
 }
 
-std::string FileManager::Upload(const std::string &input) {
-  return upload_manager_->Upload(input);
+void FileManager::Upload(const std::string &filename) {
+  const std::string metafile = upload_manager_->Upload(filename);
+
+  if (metafile.size() > 0) {
+    interface_->PrintToSystemWindow(filename + " uploade with sha1:"  + metafile);
+  } else {
+    interface_->PrintToSystemWindow("File '" + filename + "' is not found.");
+  }
 }
 
 }
