@@ -8,44 +8,10 @@
 #include "file/file_manager.h"
 #include "network.h"
 #include "interface.h"
+#include "text_storage.h"
 #include "base/stoppable.h"
 
 namespace yela {
-
-class TextStorage {
- public:
-  TextStorage() {}
-
-  void Put(const Id &id, const SequenceNumber &seq_num, const std::string &content,
-           const long timestamp) {
-    storage_[id][seq_num] = Chat(content, timestamp);
-  }
-
-  Chat Get(const Id &id, const SequenceNumber &seq_num) {
-    auto p = storage_.find(id);
-    if (p == storage_.end()) {
-      std::string msg = "ERROR: message storage failed to map id: " + id +
-       " with sequence number " + std::to_string(seq_num);
-      Log(msg);
-      return Chat();
-    }
-
-    auto x = p->second.find(seq_num);
-    if (x == p->second.end()) {
-      std::string msg = "ERROR: message storage failed to map sequence number: "
-        + std::to_string(seq_num) + " from id: " + id;
-      Log(msg);
-      return Chat();
-    }
-
-    return storage_[id][seq_num];
-  }
-
- private:
-  std::unordered_map<Id, std::unordered_map<SequenceNumber, Chat>> storage_;
-};
-
-
 
 class Node: public Stoppable {
  public:
@@ -69,7 +35,7 @@ class Node: public Stoppable {
   void PollEvents();
 
   // Anti-entropy
-  // Periodic send message
+  // Periodic send table
   const int kPeriodInMs = 2000;
   void SendTableToRandomPeer();
   bool running;
@@ -87,6 +53,7 @@ class Node: public Stoppable {
   void HandleStatusMessage(const Message &msg);
   void HandleRumorMessage(const Message &msg, sockaddr_in &peer_addr);
   void HandleMessageFromPeer();
+  void DispatchRemoteMessageToHandler(const Message &msg, sockaddr_in &peer_addr);
   void HandleLocalHostInput();
 };
 }

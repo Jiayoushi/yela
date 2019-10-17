@@ -87,9 +87,9 @@ void Node::SendTableToRandomPeer() {
 }
 
 void Node::HandleMessageFromPeer() {
+  // Read from raw sockets
   struct sockaddr_in peer_addr;
   socklen_t addrlen = sizeof(peer_addr);
-  
   char buf[Message::kMaxMessageSize + 1];
   int len = recvfrom(network_->listen_fd_, buf, Message::kMaxMessageSize, 0,
               (struct sockaddr *)&peer_addr, &addrlen);
@@ -98,14 +98,19 @@ void Node::HandleMessageFromPeer() {
     return;
   }
 
+  // Parse
   Message msg = network_->ParseMessage(buf, len);
 
-  // Check if it is a new node first
-  // If it is a new peer, parse its chat text in the form of IP:PORT, or HOSTNAME:PORT
+  // Insert
   if (!network_->IsKnownPeer(msg["id"])) {
     network_->InsertPeer(msg["id"], peer_addr);
   }
 
+  // Dispatch
+  DispatchRemoteMessageToHandler(msg, peer_addr);
+}
+
+void Node::DispatchRemoteMessageToHandler(const Message &msg, sockaddr_in &peer_addr) {
   // TODO: msg type should be converted to integer
   //  and it's better to use switch
   // TODO: should have file_manager handle different operations related to file managing
