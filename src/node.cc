@@ -61,17 +61,18 @@ void Node::PollEvents() {
 
     Log("Error: epoll_wait failed");                                               
     exit(EXIT_FAILURE);
-  } else if (event_count == 0) {
+  } else {
     // Check if there is any local user input
     if (interface_->local_inputs_.size() > 0) {
       HandleLocalHostInput();
     }
-  } else {
+
+    // If event_count != 0, process registerd events
     for (int i = 0; i < event_count; ++i) {
       if (network_->events_[i].data.fd == network_->listen_fd_) {
         HandleMessageFromPeer();
       } else {
-        std::cerr << "Unmatched file descriptor" << std::endl;
+        Log("Unmatched event in epoll");
       }
     }
   }
@@ -172,8 +173,6 @@ void Node::AcknowledgeMessage(const Id &id) {
 
 // Handle rumor message that is from remote nodes
 void Node::HandleRumorMessage(const Message &msg, sockaddr_in &peer_addr) {
-  bool new_seq_num = false;
-
   if (msg["id"] == network_->GetId()) {
     return;
   }
@@ -185,36 +184,28 @@ void Node::HandleRumorMessage(const Message &msg, sockaddr_in &peer_addr) {
 
   int &last_sequence_number = seq_num_table_[msg["id"]];
   int msg_seq_num = std::stoi(msg["seqnum"]);
-  // A message already received, discard
-  if (msg_seq_num < last_sequence_number) {
-    return ;
   // The expected message sequence number
-  } else if (msg_seq_num == last_sequence_number) {
-    ProcessRumorMessage(msg);
-    new_seq_num = true;
-  // Waiting for message with seq#1, instead seq#2 is received. Discard it.
-  // TODO: Maybe we should cache it?
-  } else {
-    // Discard
+  if (msg_seq_num != last_sequence_number) {
+    return;
   }
+
+  InsertNewRumorMessage(msg);
 
   // Update destination-sequenced distance vector
-  if (new_seq_num) {
-    network_->UpdateDistanceVector(msg["id"], peer_addr);
-  }
+  network_->UpdateDistanceVector(msg["id"], peer_addr);
 }
 
-void Node::ProcessRumorMessage(const Message &msg) {
-  // Log for debug
+void Node::RelayMessage(const Message &msg) {
+  network_->SendMessageToRandomPeer(msg);
+}
+
+void Node::InsertNewRumorMessage(const Message &msg) {
   Log("Received Rumor message from " + msg["id"] + " seq_number: " + 
       msg["seqnum"] + " \"" + msg["data"] + "\" timestamp:" + msg["timestamp"]);
 
   // Store this message
   text_storage_.Put(msg["id"], std::stoi(msg["seqnum"]), msg["data"], 
                     std::stol(msg["timestamp"]));
-
-  // Send to random neighbor
-  network_->SendMessageToRandomPeer(msg);
 
   // Insert into dialogue to be printed
   Chat chat(msg["data"], std::stol(msg["timestamp"]));
@@ -233,7 +224,8 @@ void Node::HandleLocalHostInput() {
 
     if (input.mode == kChat) {
       Message msg(network_->GetId(), seq_num_table_[network_->GetId()], input.content, input.timestamp);
-      ProcessRumorMessage(msg);
+      InsertNewRumorMessage(msg);
+      RelayMessage(msg);
     } else if (input.mode == kUpload) {
       file_manager_->Upload(input.content);
     } else if (input.mode == kDownload) {

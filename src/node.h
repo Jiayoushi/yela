@@ -70,7 +70,7 @@ class Node: public Stoppable {
 
   // Anti-entropy
   // Periodic send message
-  const int kPeriodInMs = 1000;
+  const int kPeriodInMs = 2000;
   void SendTableToRandomPeer();
   bool running;
 
@@ -82,7 +82,8 @@ class Node: public Stoppable {
   TextStorage text_storage_;
 
   void AcknowledgeMessage(const Id &origin);
-  void ProcessRumorMessage(const Message &msg);
+  void RelayMessage(const Message &msg);
+  void InsertNewRumorMessage(const Message &msg);
   void HandleStatusMessage(const Message &msg);
   void HandleRumorMessage(const Message &msg, sockaddr_in &peer_addr);
   void HandleMessageFromPeer();
