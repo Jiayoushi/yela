@@ -34,6 +34,7 @@ class Network {
   const Id & GetId();
 
   // Message
+  void SendMessageToTargetPeer(const Message &msg, const Id &id);
   void SendMessageToRandomPeer(const Message &msg);
   Message ParseMessage(const char *data, const int size);
 
@@ -62,7 +63,6 @@ class Network {
   // Message
   void SendMessage(const NetworkId &id, const Message &msg);
 
- 
   void Listen();
   void InitializeEpoll();
 
@@ -74,6 +74,7 @@ class Network {
   NetworkId me_;
 
   // All nodes' network id
+  int FindTargetNetworkId(const Id &id);
   std::vector<NetworkId> distance_vector_;
 };
 

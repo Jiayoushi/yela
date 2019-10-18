@@ -89,10 +89,12 @@ void Node::HandleMessageFromPeer() {
   // Parse
   Message msg = network_->ParseMessage(buf, len);
 
-  // Register a remote node's network information
+  // If it's a new node, register this node's network information
   if (!network_->IsKnownPeer(msg["id"])) {
     network_->InsertPeer(msg["id"], peer_addr);
   }
+
+  network_->UpdateDistanceVector(msg["id"], peer_addr);
 
   // Dispatch
   DispatchRemoteMessageToHandler(msg, peer_addr);

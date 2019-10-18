@@ -103,6 +103,20 @@ void Network::Listen() {
   }                                                                                   
 }
 
+int Network::FindTargetNetworkId(const Id &id) {
+  return 0;
+}
+
+void Network::SendMessageToTargetPeer(const Message &msg, const Id &id) {
+  int index = FindTargetNetworkId(id);
+  if (index == -1) {
+    Log(std::string("Error: SendMessageToTargetPeer cannot find target network id given ") + "node id:" + id);
+    return;
+  }
+
+  SendMessage(distance_vector_[index], msg);
+}
+
 void Network::SendMessage(const NetworkId &target, const Message &msg) {
   struct sockaddr_in target_address;
   memset(&target_address, 0, sizeof(target_address));
@@ -145,14 +159,10 @@ void Network::SendMessageToRandomPeer(const Message &msg) {
   std::mt19937 mt(rd());
   std::uniform_int_distribution<int> gen(0, distance_vector_.size() - 1);
   
-  int random_index = gen(mt);
-  if (distance_vector_[random_index].id == msg["id"]) {
-    return;
-  }
-
-  if (msg["id"].size() == 0) {
-    Log("WARNING: message's id is not set");
-  }
+  int random_index = 0;
+  do {
+    random_index = gen(mt);
+  } while (distance_vector_[random_index].id == GetId());
 
   SendMessage(distance_vector_[random_index], msg);
 }
@@ -197,7 +207,7 @@ void Network::UpdateDistanceVector(const Id &id, const struct sockaddr_in &addr)
     if (id == distance_vector_[i].id) {
       distance_vector_[i].ip = GetIp(addr);
       distance_vector_[i].port = GetPort(addr);
-    }   
+    }
   }
 }
 

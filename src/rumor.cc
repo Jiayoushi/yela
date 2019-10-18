@@ -68,14 +68,18 @@ void Rumor::HandleRumorMessage(const Message &msg) {
   int last_sequence_number = seq_num_table_.Get(msg["id"]);
   int msg_seq_num = std::stoi(msg["seqnum"]);
   // The expected message sequence number
+  // NOTE: Rumormongering
+  //       If a message has been seen before, this node does not even relay the message
+  //       While anti-antropy keeps relaying
+  
   if (msg_seq_num != last_sequence_number) {
     return;
   }
 
   InsertNewRumorMessage(msg);                                                         
   
-  // Update destination-sequenced distance vector                                     
-  //network_->UpdateDistanceVector(msg["id"], peer_addr);
+  // Send status vector to where this message come from
+  AcknowledgeMessage(msg["id"]);
 } 
 
 // Two tasks:
@@ -116,7 +120,7 @@ void Rumor::HandleStatusMessage(const Message &msg) {
 
 void Rumor::AcknowledgeMessage(const Id &id) {
   Message status_message(network_->GetId(), seq_num_table_);
-  network_->SendMessageToRandomPeer(status_message);
+  network_->SendMessageToTargetPeer(status_message, id);
 }
 
 void Rumor::InsertNewRumorMessage(const Message &msg) {
