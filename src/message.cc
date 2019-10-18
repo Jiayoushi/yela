@@ -8,6 +8,10 @@ Message::Message() {
 
 }
 
+Message::~Message() {
+
+}
+
 Message::Message(const Id &id, const SequenceNumber &seq_num,
   const std::string &data, const long timestamp) {
   ConstructRumorMessage(id, seq_num, data, timestamp);

@@ -7,6 +7,7 @@
 #include "cereal/types/string.hpp"
 #include "cereal/archives/binary.hpp"
 #include "cereal/types/concepts/pair_associative_container.hpp"
+#include "task.h"
 
 namespace yela {
 
@@ -55,7 +56,7 @@ enum kTypeKeys {
 //  hash
 //  hoplimit
 // BlockReply
-class Message {
+class Message: public Task {
  public:
   const static size_t kMaxMessageSize = 1024;
   const std::string kEmptyString = std::string();
@@ -68,6 +69,8 @@ class Message {
   std::string & operator[](const std::string &key);
   const std::string & operator[](const std::string &key) const;
   static SequenceNumberTable Deserialize(const std::string &table);
+
+  ~Message();
 
   template<typename Archive>
   void serialize(Archive &archive) {

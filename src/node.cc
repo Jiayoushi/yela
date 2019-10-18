@@ -21,13 +21,15 @@
 
 namespace yela {
 
-Node::Node():
-  running(false) {
+Node::Node() {
   Log("Node component initialized.");
+
+  file_manager_ = std::make_shared<FileManager>();
+  rumor_ = std::make_shared<Rumor>();
 }
 
 Node::~Node() {
-  Log("Node component destroyed.");
+  Log("Node component terminated.");
   // TODO: other processes should handle this.
   // CloseLop should be handled by a Logger class
   // dialogue should handled by interface itself.
@@ -37,17 +39,14 @@ Node::~Node() {
 
 void Node::RegisterNetwork(std::shared_ptr<Network> network) {
   network_ = network;
-
-  // Every node keeps its own sequence number.
-  seq_num_table_[network_->GetId()] = kInitialSequenceNumber;
+  rumor_->RegisterNetwork(network);
+  file_manager_->RegisterNetwork(network);
 }
 
 void Node::RegisterInterface(std::shared_ptr<Interface> interface) {
   interface_ = interface;
-}
-
-void Node::RegisterFileManager(std::shared_ptr<FileManager> file_manager) {
-  file_manager_ = file_manager;
+  rumor_->RegisterInterface(interface);
+  file_manager_->RegisterInterface(interface);
 }
 
 // TODO: network module should handle this
@@ -66,7 +65,6 @@ void Node::PollEvents() {
     if (interface_->local_inputs_.size() > 0) {
       HandleLocalHostInput();
     }
-
     // If event_count != 0, process registerd events
     for (int i = 0; i < event_count; ++i) {
       if (network_->events_[i].data.fd == network_->listen_fd_) {
@@ -75,14 +73,6 @@ void Node::PollEvents() {
         Log("Unmatched event in epoll");
       }
     }
-  }
-}
-
-void Node::SendTableToRandomPeer() {
-  while (!StopRequested()) {
-    Message status_message(network_->GetId(), seq_num_table_);
-    network_->SendMessageToRandomPeer(status_message);
-    std::this_thread::sleep_for(std::chrono::milliseconds(kPeriodInMs));
   }
 }
 
@@ -101,7 +91,7 @@ void Node::HandleMessageFromPeer() {
   // Parse
   Message msg = network_->ParseMessage(buf, len);
 
-  // Insert
+  // Register a remote node's network information
   if (!network_->IsKnownPeer(msg["id"])) {
     network_->InsertPeer(msg["id"], peer_addr);
   }
@@ -111,113 +101,12 @@ void Node::HandleMessageFromPeer() {
 }
 
 void Node::DispatchRemoteMessageToHandler(const Message &msg, sockaddr_in &peer_addr) {
-  // TODO: msg type should be converted to integer
-  //  and it's better to use switch
-  // TODO: should have file_manager handle different operations related to file managing
-  // Handle message
-  if (msg["type"] == kTypes[kRumor]) {
-    HandleRumorMessage(msg, peer_addr);
-  } else if (msg["type"] == kTypes[kStatus]) {
-    HandleStatusMessage(msg);
-  } else if (msg["type"] == kTypes[kBlockRequest]) {
-    file_manager_->HandleBlockRequest(msg);
-  } else if (msg["type"] == kTypes[kBlockReply]) {
-    file_manager_->HandleBlockReply(msg);
-  } else if (msg["type"] == kTypes[kSearchRequest]) {
-    file_manager_->HandleSearchRequest(msg);
-  } else if (msg["type"] == kTypes[kSearchReply]) {
-    file_manager_->HandleSearchReply(msg);
+  // Rumor and Status message
+  if (msg["type"] == kTypes[kRumor] || msg["type"] == kTypes[kStatus]) {
+    rumor_->PushRemoteMessage(msg);
   } else {
-    Log("Unmatched file type " + msg["type"]);
+    file_manager_->HandleRemoteMessage(msg);
   }
-}
-
-// Two tasks:
-//  1. Check if the sender needs anything that can be sent from this node
-//  2. Check if this node needs anything that sender has already seen
-void Node::HandleStatusMessage(const Message &msg) {
-  Log("Received status message from " + msg["id"]);
-  const SequenceNumberTable msg_sqn_table = Message::Deserialize(msg["seqtable"]);
-
-  bool send_status_message = false;
-  for (auto p = msg_sqn_table.begin(); p != msg_sqn_table.end(); ++p) {
-    Id id = p->first;
-    int seq_num = p->second;
-
-    // If this node has never seen this id before, it needs to record this
-    // new id, and set the default seq number.
-    if (seq_num_table_.find(id) == seq_num_table_.end()) {
-      seq_num_table_[id] = kInitialSequenceNumber;
-    }
-
-    if (seq_num_table_[id] > seq_num) {
-      const Chat chat = text_storage_.Get(id, seq_num);
-      network_->SendMessageToRandomPeer(Message(id, seq_num, chat.content, chat.timestamp));
-    } else if (seq_num_table_[id] < seq_num) {
-      Log("wants to have seq_num: " + std::to_string(seq_num_table_[id]) + 
-          " from " + id);
-      send_status_message = true;
-    }
-  }
-
-  // This node has found message it has not received, send status message
-  // letting others know this node want unrecieved messages.
-  if (send_status_message) {
-    network_->SendMessageToRandomPeer(Message(network_->GetId(), seq_num_table_));
-  }
-}
-
-// Since it's UDP, we need to resend messages if datagrams are dropped
-// The ack message is a status message 
-void Node::AcknowledgeMessage(const Id &id) {
-  Message status_message(network_->GetId(), seq_num_table_);
-
-  // TODO: Need to send to the sender as the ACK instead of a random neighbor
-  network_->SendMessageToRandomPeer(status_message);
-}
-
-// Handle rumor message that is from remote nodes
-void Node::HandleRumorMessage(const Message &msg, sockaddr_in &peer_addr) {
-  if (msg["id"] == network_->GetId()) {
-    return;
-  }
-
-  // If a new id comes, the default sequence number for that id should be set
-  if (seq_num_table_.find(msg["id"]) == seq_num_table_.end()) {
-    seq_num_table_[msg["id"]] = kInitialSequenceNumber;
-  }
-
-  int &last_sequence_number = seq_num_table_[msg["id"]];
-  int msg_seq_num = std::stoi(msg["seqnum"]);
-  // The expected message sequence number
-  if (msg_seq_num != last_sequence_number) {
-    return;
-  }
-
-  InsertNewRumorMessage(msg);
-
-  // Update destination-sequenced distance vector
-  network_->UpdateDistanceVector(msg["id"], peer_addr);
-}
-
-void Node::RelayMessage(const Message &msg) {
-  network_->SendMessageToRandomPeer(msg);
-}
-
-void Node::InsertNewRumorMessage(const Message &msg) {
-  Log("Received Rumor message from " + msg["id"] + " seq_number: " + 
-      msg["seqnum"] + " \"" + msg["data"] + "\" timestamp:" + msg["timestamp"]);
-
-  // Store this message
-  text_storage_.Put(msg["id"], std::stoi(msg["seqnum"]), msg["data"], 
-                    std::stol(msg["timestamp"]));
-
-  // Insert into dialogue to be printed
-  Chat chat(msg["data"], std::stol(msg["timestamp"]));
-  interface_->InsertToDialogue(msg["id"], msg["data"], std::stol(msg["timestamp"]));
-
-  // Update sequence number table
-  ++seq_num_table_[msg["id"]];
 }
 
 // Read user input and send to random peer
@@ -228,18 +117,14 @@ void Node::HandleLocalHostInput() {
     const Input &input = interface_->local_inputs_.front();
 
     if (input.mode == kChat) {
-      Message msg(network_->GetId(), seq_num_table_[network_->GetId()], input.content, input.timestamp);
-      InsertNewRumorMessage(msg);
-      RelayMessage(msg);
-    } else if (input.mode == kUpload) {
-      file_manager_->Upload(input.content);
-    } else if (input.mode == kDownload) {
-      file_manager_->Download(input.content);
-    } else if (input.mode == kSearch) {
-      file_manager_->Search(input.content);
+      rumor_->PushLocalInput(input);
+    } else if (input.mode == kUpload   || 
+               input.mode == kDownload || 
+               input.mode == kSearch) {
+      file_manager_->HandleLocalRequest(input);
     } else {
       Log("WARNING: current input mode " + std::to_string(input.mode) + 
-      " is not matched to any of the mode");
+          " is not matched to any of the mode");
     }
 
     interface_->local_inputs_.pop();
@@ -248,14 +133,31 @@ void Node::HandleLocalHostInput() {
   interface_->local_inputs_mutex_.unlock();
 }
 
+void Node::RunRumor() {
+  rumor_->Run();
+}
+
+void Node::RunFileSharing() {
+  file_manager_->Run();  
+}
+
 void Node::Run() {
-  std::thread send_table_thread(&Node::SendTableToRandomPeer, this);
+  std::thread rumor_thread(&Node::RunRumor, this);
+  std::thread file_thread(&Node::RunFileSharing, this);
 
   while (!StopRequested()) {
     PollEvents();
   }
 
-  send_table_thread.join();
+  Log("Node issue all stops");
+
+  rumor_->Stop();
+  file_manager_->Stop();
+
+  Log("Node start join");
+  rumor_thread.join();
+  file_thread.join();
+  Log("node finish join");
 }
 
 }

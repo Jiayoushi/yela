@@ -17,17 +17,15 @@ class Yela {
   Yela(const Arguments &arg);
   ~Yela();
 
-
   void Run();
  private:
    void RunGossip();
    void RunNetwork();
    void RunInterface();
-   void RunFileSharing();
 
    std::shared_ptr<yela::Network> network_;
    std::shared_ptr<yela::Interface> interface_;
-   std::shared_ptr<yela::FileManager> file_manager_;
+   //std::shared_ptr<yela::FileManager> file_manager_;
    std::shared_ptr<yela::Node> node_;
 
    std::vector<std::thread> background_threads_;

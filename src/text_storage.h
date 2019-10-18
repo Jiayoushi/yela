@@ -9,6 +9,7 @@
 
 namespace yela {
 
+// Store the rumor message's content
 class TextStorage {                                                                   
  public:
   void Put(const Id &id, const SequenceNumber &seq_num, 

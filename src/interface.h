@@ -10,10 +10,12 @@
 #include <iostream>
 
 #include "network.h"
+#include "task.h"
 
 namespace yela {
 
-struct Input {
+class Input: public Task {
+ public:
   int mode;
   std::string content;
   long timestamp;
@@ -22,6 +24,8 @@ struct Input {
     mode(m), content(s), timestamp(t) {
 
   }
+
+  ~Input() {}
 };
 
 // Menu for options for either chat, upload file, download file or search file

@@ -29,14 +29,17 @@ class FileManager: public Stoppable {
   void Download(const std::string &input);
   void Search(const std::string &input);
 
+  void HandleRemoteMessage(const Message &msg);
+  void HandleLocalRequest(const Input &input);
+
+  void Run();
+ private:
   // Handle requests from remote user
   void HandleBlockRequest(const Message &msg);
   void HandleBlockReply(const Message &msg);
   void HandleSearchRequest(const Message &msg);
   void HandleSearchReply(const Message &msg);
 
-  void Run();
- private:
   // File Uploading
   std::shared_ptr<UploadManager> upload_manager_;
 

@@ -26,6 +26,8 @@ Network::~Network() {
   shutdown(listen_fd_, SHUT_RDWR);
   close(listen_fd_);
   close(epoll_fd_);
+
+  Log("Network component terminated");
 }
 
 NetworkId Network::ParseSettingLine(const std::string &line) {

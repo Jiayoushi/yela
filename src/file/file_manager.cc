@@ -21,18 +21,44 @@ FileManager::FileManager():
 }
 
 FileManager::~FileManager() {
-
+  Log("File Manager terminted");
 }
 
+
+// TODO: do i need this?
 void FileManager::Run() {
-  while (true) {
-    // Should instead sleep
-    if (StopRequested()) {
-      download_manager_->Stop();
-      search_manager_->Stop();
-      break;
-    }
+  while (!StopRequested()) {
+
   }
+  
+  Log("File manager issues stop");
+  download_manager_->Stop();
+  search_manager_->Stop();
+  Log("File manager finishes stop");
+}
+
+void FileManager::HandleLocalRequest(const Input &input) {
+  if (input.mode == kUpload) {
+    Upload(input.content);
+  } else if (input.mode == kDownload) {                                             
+    Download(input.content);                                         
+  } else if (input.mode == kSearch) {                                               
+    Search(input.content);
+  }
+}
+
+void FileManager::HandleRemoteMessage(const Message &msg) {
+  if (msg["type"] == kTypes[kBlockRequest]) {
+    HandleBlockRequest(msg);
+  } else if (msg["type"] == kTypes[kBlockReply]) {
+    HandleBlockReply(msg);                                             
+  } else if (msg["type"] == kTypes[kSearchRequest]) {
+    HandleSearchRequest(msg);                                          
+  } else if (msg["type"] == kTypes[kSearchReply]) {                                   
+    HandleSearchReply(msg);                                            
+  } else {
+    Log("Unmatched file type " + msg["type"]);                                        
+  }     
 }
 
 // TODO: gotta have a better way to handle this
@@ -50,7 +76,6 @@ void FileManager::RegisterInterface(std::shared_ptr<Interface> interface) {
 }
 
 void FileManager::Search(const std::string &input) {
-  search_manager_->Search(input);
 }
 
 void FileManager::Download(const std::string &input) {
