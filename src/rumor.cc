@@ -25,7 +25,7 @@ Rumor::~Rumor() {
 void Rumor::RegisterNetwork(std::shared_ptr<Network> network) {
   network_ = network;
 
-  seq_num_table_[network_->GetId()] = kInitialSequenceNumber;
+  seq_num_table_.Set(network_->GetId(), kInitialSequenceNumber);
 }
 
 void Rumor::RegisterInterface(std::shared_ptr<Interface> interface) {
@@ -42,7 +42,7 @@ void Rumor::PushRemoteMessage(const Message &msg) {
 
 // Convert local input into a message form and then push
 void Rumor::PushLocalInput(const Input &input) {
-  Message msg(network_->GetId(), seq_num_table_[network_->GetId()], 
+  Message msg(network_->GetId(), seq_num_table_.Get(network_->GetId()), 
               input.content, input.timestamp);
   msg_queue_.Push(msg);
 }
@@ -63,11 +63,9 @@ void Rumor::ProcessOneMessage() {
 // Handle rumor message that is from remote peers or local user's input
 void Rumor::HandleRumorMessage(const Message &msg) {
   // If a new id comes, the default sequence number for that id should be set
-  if (seq_num_table_.find(msg["id"]) == seq_num_table_.end()) {
-    seq_num_table_[msg["id"]] = kInitialSequenceNumber;
-  }
+  seq_num_table_.SetIfAbsent(msg["id"], kInitialSequenceNumber);
 
-  int &last_sequence_number = seq_num_table_[msg["id"]];
+  int last_sequence_number = seq_num_table_.Get(msg["id"]);
   int msg_seq_num = std::stoi(msg["seqnum"]);
   // The expected message sequence number
   if (msg_seq_num != last_sequence_number) {
@@ -85,24 +83,25 @@ void Rumor::HandleRumorMessage(const Message &msg) {
 //  2. Check if this node needs anything that sender has already seen
 void Rumor::HandleStatusMessage(const Message &msg) {
   Log("Received status message from " + msg["id"]);
-  const SequenceNumberTable msg_sqn_table = Message::Deserialize(msg["seqtable"]);
+  const SequenceTable neighbor_seq_table(msg["seqtable"]);
 
   bool send_status_message = false;
-  for (auto p = msg_sqn_table.begin(); p != msg_sqn_table.end(); ++p) {
+  for (auto p = neighbor_seq_table.cbegin(); p != neighbor_seq_table.cend(); ++p) {
     Id id = p->first;
     int seq_num = p->second;
 
     // If this node has never seen this id before, it needs to record this
     // new id, and set the default seq number.
-    if (seq_num_table_.find(id) == seq_num_table_.end()) {
-      seq_num_table_[id] = kInitialSequenceNumber;
-    }
+    seq_num_table_.SetIfAbsent(id, kInitialSequenceNumber);
 
-    if (seq_num_table_[id] > seq_num) {
+    // If I have rumor my neighbor has not seen before, send that rumor 
+    if (seq_num_table_.Get(id) > seq_num) {
       const Chat chat = text_storage_.Get(id, seq_num);
-      network_->SendMessageToRandomPeer(Message(id, seq_num, chat.content, chat.timestamp));
-    } else if (seq_num_table_[id] < seq_num) {
-      Log("wants to have seq_num: " + std::to_string(seq_num_table_[id]) +
+      network_->SendMessageToRandomPeer(Message(id, seq_num, chat.content, 
+                                                chat.timestamp));
+    // My neighbor has rumor that I do not have
+    } else if (seq_num_table_.Get(id) < seq_num) {
+      Log(" Wants to have seq_num: " + std::to_string(seq_num_table_.Get(id)) +
           " from " + id);
       send_status_message = true;
     }
@@ -132,8 +131,8 @@ void Rumor::InsertNewRumorMessage(const Message &msg) {
   Chat chat(msg["data"], std::stol(msg["timestamp"]));                                
   interface_->InsertToDialogue(msg["id"], msg["data"], std::stol(msg["timestamp"]));  
   
-  // Update sequence number table                                                     
-  ++seq_num_table_[msg["id"]];
+  // Update sequence number table
+  seq_num_table_.Increment(msg["id"]);
 }
 
 void Rumor::Run() {

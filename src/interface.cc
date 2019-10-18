@@ -6,7 +6,6 @@
 #include <iostream>
 #include <ctime>
 
-#include "global.h"
 #include "log.h"
 
 namespace yela {

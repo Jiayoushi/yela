@@ -1,7 +1,6 @@
 #ifndef YELA_FILE_SEARCH_H_
 #define YELA_FILE_SEARCH_H_
 
-#include "../global.h"
 #include "../log.h"
 #include "../network.h"
 #include "../base/stoppable.h"

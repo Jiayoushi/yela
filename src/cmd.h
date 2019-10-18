@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include "global.h"
-
 namespace yela {
 
 struct Arguments {

@@ -17,8 +17,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "global.h"
-
 namespace yela {
 
 Node::Node() {

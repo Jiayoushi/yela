@@ -4,7 +4,6 @@
 #include <thread>
 #include <memory>
 
-#include "global.h"
 #include "cmd.h"
 #include "node.h"
 #include "network.h"

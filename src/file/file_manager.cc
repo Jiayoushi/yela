@@ -5,8 +5,6 @@
 #include <string>
 #include <chrono>
 
-#include "../global.h"
-
 namespace yela {
 
 FileManager::FileManager():

@@ -3,8 +3,8 @@
 
 #include <iomanip>
 
-#include "../global.h"
 #include "../log.h"
+#include "../network.h"
 #include "../base/stoppable.h"
 
 namespace yela {

@@ -7,6 +7,7 @@
 #include "text_storage.h"
 #include "network.h"
 #include "interface.h"
+#include "sequence_table.h"
 #include "base/stoppable.h"
 #include "base/blocking_queue.h"
 
@@ -37,7 +38,7 @@ class Rumor: public Stoppable {
 
   // Sequence number of each rumor message
   const int kInitialSequenceNumber = 1;
-  SequenceNumberTable seq_num_table_;
+  SequenceTable seq_num_table_;
 
   // Store rumor message 
   void InsertNewRumorMessage(const Message &msg);

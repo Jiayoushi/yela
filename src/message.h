@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 
+#include "sequence_table.h"
 #include "cereal/types/string.hpp"
 #include "cereal/archives/binary.hpp"
 #include "cereal/types/concepts/pair_associative_container.hpp"
@@ -11,9 +12,6 @@
 namespace yela {
 
 typedef std::string Data;
-typedef std::string Id;
-typedef int SequenceNumber;
-typedef std::unordered_map<Id, SequenceNumber> SequenceNumberTable;
 
 const std::vector<std::string> kTypes = {
   "Rumor", 
@@ -23,6 +21,7 @@ const std::vector<std::string> kTypes = {
   "SearchRequest",
   "SearchReply"
 };
+
 enum kTypeKeys {
   kRumor          = 0, 
   kStatus         = 1,
@@ -63,11 +62,10 @@ class Message {
   Message();
   Message(const Id &id, const SequenceNumber &seq_num, const std::string &data, 
           const long timestamp);
-  Message(const Id &id, const SequenceNumberTable &table);
+  Message(const Id &id, const SequenceTable &table);
 
   std::string & operator[](const std::string &key);
   const std::string & operator[](const std::string &key) const;
-  static SequenceNumberTable Deserialize(const std::string &table);
 
   ~Message();
 
@@ -78,11 +76,9 @@ class Message {
  private:
   std::unordered_map<std::string, std::string> kv_map_;
 
-  std::string SeqTableToString(const SequenceNumberTable &table);
-
   void ConstructRumorMessage(const Id &id, const SequenceNumber &seq_num,
                              const std::string &data, const long timestamp);
-  void ConstructStatusMessage(const Id &id, const SequenceNumberTable &table);
+  void ConstructStatusMessage(const Id &id, const SequenceTable &table);
 };
 
 }

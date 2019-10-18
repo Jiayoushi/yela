@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "global.h"
 #include "message.h"
 
 namespace yela {
