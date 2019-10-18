@@ -10,11 +10,10 @@
 #include <iostream>
 
 #include "network.h"
-#include "task.h"
 
 namespace yela {
 
-class Input: public Task {
+class Input {
  public:
   int mode;
   std::string content;

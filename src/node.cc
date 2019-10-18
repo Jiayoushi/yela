@@ -149,15 +149,11 @@ void Node::Run() {
     PollEvents();
   }
 
-  Log("Node issue all stops");
-
   rumor_->Stop();
   file_manager_->Stop();
 
-  Log("Node start join");
   rumor_thread.join();
   file_thread.join();
-  Log("node finish join");
 }
 
 }

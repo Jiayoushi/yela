@@ -31,10 +31,8 @@ void FileManager::Run() {
 
   }
   
-  Log("File manager issues stop");
   download_manager_->Stop();
   search_manager_->Stop();
-  Log("File manager finishes stop");
 }
 
 void FileManager::HandleLocalRequest(const Input &input) {

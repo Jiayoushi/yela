@@ -7,7 +7,6 @@
 #include "cereal/types/string.hpp"
 #include "cereal/archives/binary.hpp"
 #include "cereal/types/concepts/pair_associative_container.hpp"
-#include "task.h"
 
 namespace yela {
 
@@ -56,7 +55,7 @@ enum kTypeKeys {
 //  hash
 //  hoplimit
 // BlockReply
-class Message: public Task {
+class Message {
  public:
   const static size_t kMaxMessageSize = 1024;
   const std::string kEmptyString = std::string();

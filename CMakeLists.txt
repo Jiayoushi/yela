@@ -19,12 +19,12 @@ add_executable(yela
                src/cmd.cc
                src/rumor.cc
                src/text_storage.cc
-               src/task.h
                src/file/file_manager.cc
                src/file/file_search.cc
                src/file/file_upload.cc
                src/file/file_download.cc
-               src/base/stoppable.cc)
+               src/base/stoppable.cc
+               src/base/blocking_queue.cc)
 target_link_libraries(yela Threads::Threads)
 target_link_libraries(yela ${CURSES_LIBRARIES})
 target_link_libraries(yela crypto)

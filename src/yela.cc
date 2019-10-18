@@ -40,7 +40,6 @@ void Yela::Run() {
   // The main thread is handling the GUI
   // Right after the GUI exits, the whole program should exit
   RunInterface();
-  Log("interface properly exits the loop");
 
   // Stop
   node_->Stop();
