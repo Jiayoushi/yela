@@ -9,8 +9,8 @@ Yela::Yela(const Arguments &arg) {
   network_ = std::make_shared<yela::Network>(arg.settings_file);
 
   // Log
-  std::string id = network_->GetId();
-  InitLog(id);
+  std::string origin = network_->GetOrigin();
+  InitLog(origin);
 
   // Interface
   interface_ = std::make_shared<Interface>();
@@ -50,7 +50,7 @@ void Yela::Run() {
   }
 
   CloseLog();
-  interface_->WriteDialogueToFile(network_->GetId());
+  interface_->WriteDialogueToFile(network_->GetOrigin());
 }
 
 }

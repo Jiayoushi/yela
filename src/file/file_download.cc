@@ -32,7 +32,7 @@ void DownloadManager::Download(const std::string &input) {
   }                                                                                   
                                                                                       
   Message msg;                                                                        
-  msg["id"] = network_->GetId();                                                      
+  msg["id"] = network_->GetOrigin();                                                      
   msg["type"] = kTypes[kBlockRequest];                                                
   msg["dest"] = target_node_id;                                                       
   msg["blockrequest"] = target_sha1;
@@ -45,7 +45,7 @@ void DownloadManager::Download(const std::string &input) {
 
 void DownloadManager::HandleBlockRequest(const Message &request) {
   // I am not the target, relay or don't send it
-  if (request["dest"] != network_->GetId()) {
+  if (request["dest"] != network_->GetOrigin()) {
     RelayMessage(request);
     return;
   }
@@ -61,7 +61,7 @@ void DownloadManager::HandleBlockRequest(const Message &request) {
 
   const FileInfo &file_info = upload_manager_->GetFile(file_info_index);
   Message reply;
-  reply["id"] = network_->GetId();
+  reply["id"] = network_->GetOrigin();
   reply["type"] = kTypes[kBlockReply];
   reply["dest"] = request["id"];
   reply["blockreply"] = sha1;
@@ -75,7 +75,7 @@ void DownloadManager::HandleBlockRequest(const Message &request) {
 
 // Get the downloaded file put it to local
 void DownloadManager::HandleBlockReply(const Message &reply) {
-  if (reply["dest"] != network_->GetId()) {
+  if (reply["dest"] != network_->GetOrigin()) {
     RelayMessage(reply);
     return;
   }

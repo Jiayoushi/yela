@@ -34,7 +34,7 @@ enum kTypeKeys {
 // Attributes for different messages
 //
 // Common to all
-//  id
+//  origin
 //  type
 // Status
 //  data
@@ -43,12 +43,12 @@ enum kTypeKeys {
 //  seqnum
 //  timestamp
 // SearchRequest
-//  id
+//  origin
 //  search
 //  budget
 // SearchReply
 // BlockRequest
-//  id
+//  origin
 //  type
 //  dest
 //  hash
@@ -60,9 +60,9 @@ class Message {
   const std::string kEmptyString = std::string();
 
   Message();
-  Message(const Id &id, const SequenceNumber &seq_num, const std::string &data, 
+  Message(const Origin &origin, const SequenceNumber &seq_num, const std::string &data, 
           const long timestamp);
-  Message(const Id &id, const SequenceTable &table);
+  Message(const Origin &origin, const SequenceTable &table);
 
   std::string & operator[](const std::string &key);
   const std::string & operator[](const std::string &key) const;
@@ -76,9 +76,9 @@ class Message {
  private:
   std::unordered_map<std::string, std::string> kv_map_;
 
-  void ConstructRumorMessage(const Id &id, const SequenceNumber &seq_num,
+  void ConstructRumorMessage(const Origin &origin, const SequenceNumber &seq_num,
                              const std::string &data, const long timestamp);
-  void ConstructStatusMessage(const Id &id, const SequenceTable &table);
+  void ConstructStatusMessage(const Origin &origin, const SequenceTable &table);
 };
 
 }

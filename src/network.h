@@ -13,7 +13,7 @@
 namespace yela {
 
 struct NetworkId {
-  std::string id; 
+  std::string origin; 
   std::string ip;
   std::string hostname; // TODO: just delete this later
   int port;
@@ -22,7 +22,7 @@ struct NetworkId {
 
   NetworkId(const std::string &d, const std::string &p,
             const std::string &h, int pt):
-            id(d), ip(p), hostname(h), port(pt) {
+            origin(d), ip(p), hostname(h), port(pt) {
   }
 };
 
@@ -31,18 +31,18 @@ class Network {
   Network(const std::string &settings_file);
   ~Network();
 
-  const Id & GetId();
+  const Origin & GetOrigin();
 
   // Message
-  void SendMessageToTargetPeer(const Message &msg, const Id &id);
+  void SendMessageToTargetPeer(const Message &msg, const Origin &origin);
   void SendMessageToRandomPeer(const Message &msg);
   Message ParseMessage(const char *data, const int size);
 
   // Dynamically peers
-  bool IsKnownPeer(const std::string &id);
+  bool IsKnownPeer(const std::string &origin);
   void InsertPeer(const NetworkId &peer);
-  void InsertPeer(const Id &id, const struct sockaddr_in &addr);
-  void UpdateDistanceVector(const Id &id, const struct sockaddr_in &addr);
+  void InsertPeer(const Origin &origin, const struct sockaddr_in &addr);
+  void UpdateDistanceVector(const Origin &origin, const struct sockaddr_in &addr);
 
   // Epoll 
   // TODO: should be refactored
@@ -61,7 +61,7 @@ class Network {
   NetworkId ParseSettingLine(const std::string &line);
   
   // Message
-  void SendMessage(const NetworkId &id, const Message &msg);
+  void SendMessage(const NetworkId &origin, const Message &msg);
 
   void Listen();
   void InitializeEpoll();
@@ -70,11 +70,11 @@ class Network {
   std::string GetIp(const struct sockaddr_in &addr);
   int GetPort(const struct sockaddr_in &addr);
 
-  // This node's network id
+  // This node's network origin
   NetworkId me_;
 
-  // All nodes' network id
-  int FindTargetNetworkId(const Id &id);
+  // All nodes' network origin
+  int FindTargetNetworkId(const Origin &origin);
   std::vector<NetworkId> distance_vector_;
 };
 

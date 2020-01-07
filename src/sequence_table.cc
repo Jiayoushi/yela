@@ -17,26 +17,26 @@ SequenceTable::SequenceTable(const std::string &table_string) {
   }
 }
 
-void SequenceTable::Set(const Id &id, int sequence_num) {
+void SequenceTable::Set(const Origin &origin, int sequence_num) {
   std::lock_guard<std::mutex> lock(mutex_);
-  table_[id] = sequence_num;
+  table_[origin] = sequence_num;
 }
 
-void SequenceTable::Increment(const Id &id) {
+void SequenceTable::Increment(const Origin &origin) {
   std::lock_guard<std::mutex> lock(mutex_);
-  ++table_[id];
+  ++table_[origin];
 }
 
-void SequenceTable::SetIfAbsent(const Id &id, int sequence_num) {
+void SequenceTable::SetIfAbsent(const Origin &origin, int sequence_num) {
   std::lock_guard<std::mutex> lock(mutex_);
-  if (table_.find(id) == table_.end()) {
-    table_[id] = sequence_num;
+  if (table_.find(origin) == table_.end()) {
+    table_[origin] = sequence_num;
   }
 }
 
-int SequenceTable::Get(const Id &id) const {
+int SequenceTable::Get(const Origin &origin) const {
   std::lock_guard<std::mutex> lock(mutex_);
-  auto p = table_.find(id);
+  auto p = table_.find(origin);
   return p == table_.end() ? -1 : p->second;
 }
 
@@ -46,7 +46,7 @@ std::string SequenceTable::ToString() const {
   // TODO: it is better to let cereal handle the serialization
   std::string serialized;
   for (auto p = table_.begin(); p != table_.end(); ++p) {
-    // WARNING: if id contains ':', this code will be wrong
+    // WARNING: if origin contains ':', this code will be wrong
     serialized += p->first + ":" + std::to_string(p->second) + " ";
   }
   return serialized;

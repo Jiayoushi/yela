@@ -41,8 +41,8 @@ NetworkId Network::ParseSettingLine(const std::string &line) {
   return NetworkId(items[0], items[1], items[3], atoi(items[2].c_str()));
 }
 
-const Id & Network::GetId() {
-  return me_.id;
+const Origin & Network::GetOrigin() {
+  return me_.origin;
 }
 
 void Network::ReadSettings(const std::string &settings_file) {
@@ -103,14 +103,14 @@ void Network::Listen() {
   }                                                                                   
 }
 
-int Network::FindTargetNetworkId(const Id &id) {
+int Network::FindTargetNetworkId(const Origin &origin) {
   return 0;
 }
 
-void Network::SendMessageToTargetPeer(const Message &msg, const Id &id) {
-  int index = FindTargetNetworkId(id);
+void Network::SendMessageToTargetPeer(const Message &msg, const Origin &origin) {
+  int index = FindTargetNetworkId(origin);
   if (index == -1) {
-    Log(std::string("Error: SendMessageToTargetPeer cannot find target network id given ") + "node id:" + id);
+    Log(std::string("Error: SendMessageToTargetPeer cannot find target network origin given ") + "node origin:" + origin);
     return;
   }
 
@@ -151,7 +151,7 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
     exit(EXIT_FAILURE);
   }
 
-  Log(target.ip, target.id, std::to_string(target.port), msg);
+  Log(target.ip, target.origin, std::to_string(target.port), msg);
 }
 
 void Network::SendMessageToRandomPeer(const Message &msg) {
@@ -162,7 +162,7 @@ void Network::SendMessageToRandomPeer(const Message &msg) {
   int random_index = 0;
   do {
     random_index = gen(mt);
-  } while (distance_vector_[random_index].id == GetId());
+  } while (distance_vector_[random_index].origin == GetOrigin());
 
   SendMessage(distance_vector_[random_index], msg);
 }
@@ -185,13 +185,13 @@ int Network::GetPort(const struct sockaddr_in &addr) {
   return t;
 }
 
-void Network::InsertPeer(const Id &id, const struct sockaddr_in &addr) {
-  distance_vector_.push_back(NetworkId(id, GetIp(addr), "", GetPort(addr)));
+void Network::InsertPeer(const Origin &origin, const struct sockaddr_in &addr) {
+  distance_vector_.push_back(NetworkId(origin, GetIp(addr), "", GetPort(addr)));
 }
 
-bool Network::IsKnownPeer(const std::string &id) {
+bool Network::IsKnownPeer(const std::string &origin) {
   for (const NetworkId &nid: distance_vector_) {
-    if (nid.id == id) {
+    if (nid.origin == origin) {
       return true;
     }
   }
@@ -202,9 +202,9 @@ void Network::InsertPeer(const NetworkId &peer) {
   distance_vector_.push_back(peer);
 }
 
-void Network::UpdateDistanceVector(const Id &id, const struct sockaddr_in &addr) {
+void Network::UpdateDistanceVector(const Origin &origin, const struct sockaddr_in &addr) {
   for (int i = 0; i < distance_vector_.size(); ++i) {
-    if (id == distance_vector_[i].id) {
+    if (origin == distance_vector_[i].origin) {
       distance_vector_[i].ip = GetIp(addr);
       distance_vector_[i].port = GetPort(addr);
     }

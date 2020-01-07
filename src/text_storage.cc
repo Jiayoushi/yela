@@ -4,15 +4,15 @@
 
 namespace yela {
 
-void TextStorage::Put(const Id &id, const SequenceNumber &seq_num, 
+void TextStorage::Put(const Origin &origin, const SequenceNumber &seq_num, 
                       const std::string &content, const long timestamp) {
-  storage_[id][seq_num] = Chat(content, timestamp);                                 
+  storage_[origin][seq_num] = Chat(content, timestamp);                                 
 }
 
-Chat TextStorage::Get(const Id &id, const SequenceNumber &seq_num) {
-  auto p = storage_.find(id);                                                       
+Chat TextStorage::Get(const Origin &origin, const SequenceNumber &seq_num) {
+  auto p = storage_.find(origin);                                                       
   if (p == storage_.end()) {
-    std::string msg = "ERROR: message storage failed to map id: " + id +            
+    std::string msg = "ERROR: message storage failed to map origin: " + origin +            
        " with sequence number " + std::to_string(seq_num);                            
     Log(msg);
     return Chat();                                                                  
@@ -21,12 +21,12 @@ Chat TextStorage::Get(const Id &id, const SequenceNumber &seq_num) {
   auto x = p->second.find(seq_num);                                                 
   if (x == p->second.end()) {
     std::string msg = "ERROR: message storage failed to map sequence number: "      
-        + std::to_string(seq_num) + " from id: " + id;                                
+        + std::to_string(seq_num) + " from origin: " + origin;                                
     Log(msg);
     return Chat();                                                                  
   }                                                                                 
     
-  return storage_[id][seq_num];                                                     
+  return storage_[origin][seq_num];                                                     
 }
 
 }

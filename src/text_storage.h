@@ -12,13 +12,13 @@ namespace yela {
 // Store the rumor message's content
 class TextStorage {                                                                   
  public:
-  void Put(const Id &id, const SequenceNumber &seq_num, 
+  void Put(const Origin &origin, const SequenceNumber &seq_num, 
            const std::string &content, const long timestamp);
 
-  Chat Get(const Id &id, const SequenceNumber &seq_num);
+  Chat Get(const Origin &origin, const SequenceNumber &seq_num);
  
  private:
-  std::unordered_map<Id, std::unordered_map<SequenceNumber, Chat>> storage_;          
+  std::unordered_map<Origin, std::unordered_map<SequenceNumber, Chat>> storage_;          
 };
 
 

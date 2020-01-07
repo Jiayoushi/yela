@@ -32,7 +32,7 @@ Node::~Node() {
   // CloseLop should be handled by a Logger class
   // dialogue should handled by interface itself.
   CloseLog();
-  interface_->WriteDialogueToFile(network_->GetId());
+  interface_->WriteDialogueToFile(network_->GetOrigin());
 }
 
 void Node::RegisterNetwork(std::shared_ptr<Network> network) {
@@ -90,11 +90,11 @@ void Node::HandleMessageFromPeer() {
   Message msg = network_->ParseMessage(buf, len);
 
   // If it's a new node, register this node's network information
-  if (!network_->IsKnownPeer(msg["id"])) {
-    network_->InsertPeer(msg["id"], peer_addr);
+  if (!network_->IsKnownPeer(msg["origin"])) {
+    network_->InsertPeer(msg["origin"], peer_addr);
   }
 
-  network_->UpdateDistanceVector(msg["id"], peer_addr);
+  network_->UpdateDistanceVector(msg["origin"], peer_addr);
 
   // Dispatch
   DispatchRemoteMessageToHandler(msg, peer_addr);

@@ -163,12 +163,12 @@ void Interface::PrintDialogue() {
   }
 }
 
-void Interface::InsertToDialogue(const Id &id, const Data &data, 
+void Interface::InsertToDialogue(const Origin &origin, const Data &data, 
                                  const long timestamp) {
   std::string formatted_msg;
   formatted_msg.reserve(64);
   formatted_msg.append("<");
-  formatted_msg.append(id);
+  formatted_msg.append(origin);
   formatted_msg.append(">");
   formatted_msg.append(": ");
   formatted_msg.append(data);
@@ -178,8 +178,8 @@ void Interface::InsertToDialogue(const Id &id, const Data &data,
   dialogue_mutex_.unlock();
 }
 
-void Interface::WriteDialogueToFile(const Id &id) {
-  const std::string kFileName = id + "_dialogue.txt";
+void Interface::WriteDialogueToFile(const Origin &origin) {
+  const std::string kFileName = origin + "_dialogue.txt";
   std::ofstream of;
   of.open(kFileName);
   while (dialogue_.size() != 0) {

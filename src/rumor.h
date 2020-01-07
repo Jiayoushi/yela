@@ -31,7 +31,7 @@ class Rumor: public Stoppable {
   void HandleRumorMessage(const Message &msg);
 
   void RelayMessage(const Message &msg);
-  void AcknowledgeMessage(const Id &id);
+  void AcknowledgeMessage(const Origin &origin);
   void SendTableToRandomPeer();
 
   const int kPeriodInMs = 2000;
@@ -46,6 +46,9 @@ class Rumor: public Stoppable {
 
   // Including both remote and local
   BlockingQueue<Message> msg_queue_;
+
+  void Exchange(const Origin origin);
+  std::vector<std::thread> rumor_threads_;
 
   // Other components
   std::shared_ptr<Network> network_;

@@ -17,7 +17,7 @@ void SearchManager::Run() {
 void SearchManager::Search(const std::string &filename) {
   Message msg;
 
-  msg["id"] = network_->GetId();
+  msg["id"] = network_->GetOrigin();
   msg["type"] = kTypes[kSearchRequest];
   msg["search"] = filename;
 
@@ -42,7 +42,7 @@ void SearchManager::HandleSearchRequest(const Message &request) {
   Log("Handle Search request B");
   const FileInfo &file_info = upload_manager_->GetFile(file_info_index);
   Message reply;
-  reply["id"] = network_->GetId();
+  reply["id"] = network_->GetOrigin();
   reply["type"] = kTypes[kSearchReply];
   reply["dest"] = request["id"];
   reply["search"] = request["search"];
@@ -56,7 +56,7 @@ void SearchManager::HandleSearchRequest(const Message &request) {
 }
 
 std::string SearchManager::HandleSearchReply(const Message &reply) {
-  if (reply["dest"] != network_->GetId()) {
+  if (reply["dest"] != network_->GetOrigin()) {
     RelayMessage(reply);
     return "";
   }

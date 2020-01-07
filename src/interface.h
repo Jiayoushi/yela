@@ -65,9 +65,9 @@ class Interface {
   };
   std::vector<std::string> inputs_;
 
-  void InsertToDialogue(const Id &id, const std::string &data, 
+  void InsertToDialogue(const Origin &origin, const std::string &data, 
                         const long timestamp);
-  void WriteDialogueToFile(const Id &id);
+  void WriteDialogueToFile(const Origin &origin);
 
   const int kPrintFrequencyInMs = 500;
   int kMaxMsgToPrint;

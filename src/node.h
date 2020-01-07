@@ -29,7 +29,7 @@ class Node: public Stoppable {
   std::shared_ptr<Network> network_;
 
   // Information about this node
-  Id id_;
+  Origin origin_;
 
   void PollEvents();
 
