@@ -59,10 +59,6 @@ void Rumor::ProcessOneMessage() {
   }
 }
 
-void Rumor::Exchange(const Origin origin) {
-
-}
-
 // Handle rumor message that is from remote peers or local user's input
 void Rumor::HandleRumorMessage(const Message &msg) {
   // If a new origin comes, the default sequence number for that origin should be set
@@ -83,8 +79,6 @@ void Rumor::HandleRumorMessage(const Message &msg) {
   // Send status vector to where this message come from
   AcknowledgeMessage(msg["origin"]);
 
-  // TODO: start a thread to continuously rumor with a random neighbor
-  //rumor_threads_.emplace_back(&Rumor::Exchange, this, msg["origin"]);
 }
 
 // Two tasks:
@@ -106,8 +100,8 @@ void Rumor::HandleStatusMessage(const Message &msg) {
     // If I have rumor my neighbor has not seen before, send that rumor 
     if (seq_num_table_.Get(origin) > seq_num) {
       const Chat chat = text_storage_.Get(origin, seq_num);
-      network_->SendMessageToRandomPeer(Message(origin, seq_num, chat.content, 
-                                                chat.timestamp));
+      network_->SendMessageToTargetPeer(Message(origin, seq_num, chat.content, 
+                                                chat.timestamp), origin);
     // My neighbor has rumor that I do not have
     } else if (seq_num_table_.Get(origin) < seq_num) {
       Log(" Wants to have seq_num: " + std::to_string(seq_num_table_.Get(origin)) +
@@ -119,7 +113,8 @@ void Rumor::HandleStatusMessage(const Message &msg) {
   // This node has found message it has not received, send status message
   // letting others know this node want unrecieved messages.
   if (send_status_message) {
-    network_->SendMessageToRandomPeer(Message(network_->GetOrigin(), seq_num_table_));
+    network_->SendMessageToTargetPeer(Message(network_->GetOrigin(), seq_num_table_),
+                                      msg["origin"]);
   }
 }
 

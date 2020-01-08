@@ -47,8 +47,7 @@ class Rumor: public Stoppable {
   // Including both remote and local
   BlockingQueue<Message> msg_queue_;
 
-  void Exchange(const Origin origin);
-  std::vector<std::thread> rumor_threads_;
+  std::unordered_map<Origin, std::shared_ptr<Message>> exchanges_;
 
   // Other components
   std::shared_ptr<Network> network_;
