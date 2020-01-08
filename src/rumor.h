@@ -48,8 +48,6 @@ class Rumor: public Stoppable {
   BlockingQueue<Message> msg_queue_;
 
   struct Hcb {
-    std::mutex lock;
-
     bool need_ack;
     SequenceTable seq_table;
     MsgPtr last_sent_msg;

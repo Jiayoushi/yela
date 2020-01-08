@@ -58,13 +58,15 @@ void Rumor::ProcessOneMessage() {
     HandleRumorMessage(*msg);
   } else if ((*msg)["type"] == kTypes[kStatus]) {
     MsgPtr sent = HandleStatusMessage(*msg);
+
+    std::lock_guard<std::mutex> lck(exg_lock_);
     if (sent == nullptr) {
       exchanges_[origin].need_ack = false; 
+      exchanges_[origin].last_sent_msg = nullptr;
       return;
+    } else {
+      exchanges_[origin].last_sent_msg = sent;
     }
-
-    std::lock_guard<std::mutex> lck(exchanges_[origin].lock);
-    exchanges_[origin].last_sent_msg = sent;
   }
 }
 
@@ -146,8 +148,7 @@ void Rumor::AcknowledgeMessage(const Origin &origin) {
 }
 
 void Rumor::InsertNewRumorMessage(const Message &msg) {
-  Log("Received Rumor message from " + msg["origin"] + " seq_number: " +                  
-      msg["seqnum"] + " \"" + msg["data"] + "\" timestamp:" + msg["timestamp"]);      
+  Log("Received Rumor message from " + msg["origin"] + " seq_number: " +                    msg["seqnum"] + " \"" + msg["data"] + "\" timestamp:" + msg["timestamp"]);      
   
   // Store this message                                                               
   text_storage_.Put(msg["origin"], std::stoi(msg["seqnum"]), msg["data"],
@@ -156,7 +157,7 @@ void Rumor::InsertNewRumorMessage(const Message &msg) {
   // Insert into dialogue to be printed                                               
   Chat chat(msg["data"], std::stol(msg["timestamp"]));                                
   interface_->InsertToDialogue(msg["origin"], msg["data"],
-                               std::stol(msg["timestamp"]));  
+                               std::stol(msg["timestamp"]));
   
   // Update sequence number table
   seq_num_table_.Increment(msg["origin"]);
@@ -164,13 +165,15 @@ void Rumor::InsertNewRumorMessage(const Message &msg) {
 
 void Rumor::Exchange() {
   while (!StopRequested()) {
-    std::lock_guard<std::mutex> lck(exg_lock_);
+    exg_lock_.lock();
 
     for (auto p = exchanges_.begin(); p != exchanges_.end(); ++p)
       if (p->second.need_ack)
         network_->SendMessageToTargetPeer(*p->second.last_sent_msg.get(), p->first);
+    exg_lock_.unlock();
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    std::this_thread::sleep_for(std::chrono::seconds(2));
   }
 }
 
@@ -182,6 +185,7 @@ void Rumor::Run() {
     ProcessOneMessage();
 
   table_sending.join();
+  exchange_thread.join();
 }
 
 // This is another thread, so as to not mix the logic
