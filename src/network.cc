@@ -154,7 +154,7 @@ void Network::SendMessage(const NetworkId &target, const Message &msg) {
   Log(target.ip, target.origin, std::to_string(target.port), msg);
 }
 
-void Network::SendMessageToRandomPeer(const Message &msg) {
+Origin Network::SendMessageToRandomPeer(const Message &msg) {
   std::random_device rd;
   std::mt19937 mt(rd());
   std::uniform_int_distribution<int> gen(0, distance_vector_.size() - 1);
@@ -165,6 +165,8 @@ void Network::SendMessageToRandomPeer(const Message &msg) {
   } while (distance_vector_[random_index].origin == GetOrigin());
 
   SendMessage(distance_vector_[random_index], msg);
+
+  return distance_vector_[random_index].origin;
 }
 
 Message Network::ParseMessage(const char *data, const int size) {

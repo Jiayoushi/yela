@@ -31,6 +31,10 @@ enum kTypeKeys {
   kSearchReply    = 5
 };
 
+class Message;
+
+typedef std::shared_ptr<Message> MsgPtr;
+
 // Attributes for different messages
 //
 // Common to all

@@ -27,7 +27,7 @@ class Rumor: public Stoppable {
  private:
   void ProcessOneMessage();
 
-  void HandleStatusMessage(const Message &msg);
+  MsgPtr HandleStatusMessage(const Message &msg);
   void HandleRumorMessage(const Message &msg);
 
   void RelayMessage(const Message &msg);
@@ -47,7 +47,20 @@ class Rumor: public Stoppable {
   // Including both remote and local
   BlockingQueue<Message> msg_queue_;
 
-  std::unordered_map<Origin, std::shared_ptr<Message>> exchanges_;
+  struct Hcb {
+    std::mutex lock;
+
+    bool need_ack;
+    SequenceTable seq_table;
+    MsgPtr last_sent_msg;
+    Hcb() {}
+    Hcb(const Message &msg):
+      need_ack(true),
+      seq_table(), last_sent_msg(std::make_shared<Message>(msg)) {}
+  };
+  std::mutex exg_lock_;
+  std::unordered_map<Origin, Hcb> exchanges_;
+  void Exchange();
 
   // Other components
   std::shared_ptr<Network> network_;

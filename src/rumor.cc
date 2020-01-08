@@ -52,10 +52,19 @@ void Rumor::ProcessOneMessage() {
   if (msg == nullptr)
     return;
 
+  Origin origin = (*msg)["origin"];
+
   if ((*msg)["type"] == kTypes[kRumor]) { 
     HandleRumorMessage(*msg);
   } else if ((*msg)["type"] == kTypes[kStatus]) {
-    HandleStatusMessage(*msg);
+    MsgPtr sent = HandleStatusMessage(*msg);
+    if (sent == nullptr) {
+      exchanges_[origin].need_ack = false; 
+      return;
+    }
+
+    std::lock_guard<std::mutex> lck(exchanges_[origin].lock);
+    exchanges_[origin].last_sent_msg = sent;
   }
 }
 
@@ -76,46 +85,59 @@ void Rumor::HandleRumorMessage(const Message &msg) {
 
   InsertNewRumorMessage(msg);
   
+  Origin origin = msg["origin"];
   // Send status vector to where this message come from
-  AcknowledgeMessage(msg["origin"]);
+  AcknowledgeMessage(origin);
 
+  Origin neighbor = network_->SendMessageToRandomPeer(msg);
+  std::lock_guard<std::mutex> lck(exg_lock_);
+  if (exchanges_.find(origin) == exchanges_.end()) {
+    exchanges_.emplace(origin, msg);
+  } else {
+    exchanges_[origin].need_ack = true;
+    exchanges_[origin].last_sent_msg = std::make_shared<Message>(msg);
+  }
 }
 
 // Two tasks:
 //  1. Check if the sender needs anything that can be sent from this node
 //  2. Check if this node needs anything that sender has already seen
-void Rumor::HandleStatusMessage(const Message &msg) {
+MsgPtr Rumor::HandleStatusMessage(const Message &msg) {
   Log("Received status message from " + msg["origin"]);
   const SequenceTable neighbor_seq_table(msg["seqtable"]);
 
+  Origin origin = msg["origin"];
+
   bool send_status_message = false;
   for (auto p = neighbor_seq_table.cbegin(); p != neighbor_seq_table.cend(); ++p) {
-    Origin origin = p->first;
     int seq_num = p->second;
 
     // If this node has never seen this origin before, it needs to record this
     // new origin, and set the default seq number.
-    seq_num_table_.SetIfAbsent(origin, kInitialSequenceNumber);
+    seq_num_table_.SetIfAbsent(p->first, kInitialSequenceNumber);
 
     // If I have rumor my neighbor has not seen before, send that rumor 
-    if (seq_num_table_.Get(origin) > seq_num) {
-      const Chat chat = text_storage_.Get(origin, seq_num);
-      network_->SendMessageToTargetPeer(Message(origin, seq_num, chat.content, 
-                                                chat.timestamp), origin);
+    if (seq_num_table_.Get(p->first) > seq_num) {
+      const Chat chat = text_storage_.Get(p->first, seq_num);
+      MsgPtr m = std::make_shared<Message>(p->first, seq_num, 
+                                           chat.content, chat.timestamp);
+      network_->SendMessageToTargetPeer(*m.get(), origin);
+      return m;
     // My neighbor has rumor that I do not have
-    } else if (seq_num_table_.Get(origin) < seq_num) {
-      Log(" Wants to have seq_num: " + std::to_string(seq_num_table_.Get(origin)) +
-          " from " + origin);
+    } else if (seq_num_table_.Get(p->first) < seq_num) {
+      Log(" Wants to have seq_num: " + std::to_string(seq_num_table_.Get(p->first)) +
+          " from " + p->first);
       send_status_message = true;
     }
   }
 
   // This node has found message it has not received, send status message
   // letting others know this node want unrecieved messages.
-  if (send_status_message) {
+  if (send_status_message)
     network_->SendMessageToTargetPeer(Message(network_->GetOrigin(), seq_num_table_),
-                                      msg["origin"]);
-  }
+                                      origin);
+
+  return nullptr;
 }
 
 void Rumor::AcknowledgeMessage(const Origin &origin) {
@@ -128,23 +150,36 @@ void Rumor::InsertNewRumorMessage(const Message &msg) {
       msg["seqnum"] + " \"" + msg["data"] + "\" timestamp:" + msg["timestamp"]);      
   
   // Store this message                                                               
-  text_storage_.Put(msg["origin"], std::stoi(msg["seqnum"]), msg["data"],                 
-                    std::stol(msg["timestamp"]));                                     
+  text_storage_.Put(msg["origin"], std::stoi(msg["seqnum"]), msg["data"],
+                    std::stol(msg["timestamp"]));
                                                                                       
   // Insert into dialogue to be printed                                               
   Chat chat(msg["data"], std::stol(msg["timestamp"]));                                
-  interface_->InsertToDialogue(msg["origin"], msg["data"], std::stol(msg["timestamp"]));  
+  interface_->InsertToDialogue(msg["origin"], msg["data"],
+                               std::stol(msg["timestamp"]));  
   
   // Update sequence number table
   seq_num_table_.Increment(msg["origin"]);
 }
 
+void Rumor::Exchange() {
+  while (!StopRequested()) {
+    std::lock_guard<std::mutex> lck(exg_lock_);
+
+    for (auto p = exchanges_.begin(); p != exchanges_.end(); ++p)
+      if (p->second.need_ack)
+        network_->SendMessageToTargetPeer(*p->second.last_sent_msg.get(), p->first);
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+}
+
 void Rumor::Run() {
   std::thread table_sending(&Rumor::SendTableToRandomPeer, this);
+  std::thread exchange_thread(&Rumor::Exchange, this);
 
-  while (!StopRequested()) {
+  while (!StopRequested())
     ProcessOneMessage();
-  }
 
   table_sending.join();
 }

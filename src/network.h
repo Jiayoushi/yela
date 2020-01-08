@@ -35,7 +35,7 @@ class Network {
 
   // Message
   void SendMessageToTargetPeer(const Message &msg, const Origin &origin);
-  void SendMessageToRandomPeer(const Message &msg);
+  Origin SendMessageToRandomPeer(const Message &msg);
   Message ParseMessage(const char *data, const int size);
 
   // Dynamically peers
